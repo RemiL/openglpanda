@@ -18,9 +18,10 @@ or inability to use this file or items derived from it.
 #include <GL/glu.h>
 #include <GL/glut.h>
 
-#include <stdio.h>      
-#include <stdlib.h>     
+#include <stdio.h>
+#include <stdlib.h>
 #include <math.h>
+#include <time.h>
 
 #define    windowWidth 600
 #define    windowHeight 600
@@ -64,6 +65,7 @@ int  Mon_Bambou;
 int  Mon_Morceau_Bambou2;
 int  Ma_Feuille;
 int  Ma_Branche;
+int  Ma_Branche_Feuille;
 int  Mon_Repere;
 
 enum lateralite{ Gauche = 0, Droit };
@@ -118,6 +120,7 @@ void Dessine_Repere();
 
 int main(int argc, char **argv) 
 {
+  srand(time(NULL));
   // initialisation  des paramètres de GLUT en fonction
   // des arguments sur la ligne de commande
   glutInit(&argc, argv);
@@ -292,6 +295,7 @@ GLvoid window_timer()
 
 // un cylindre
 void Faire_Composantes() {
+  int i;
   GLUquadricObj* qobj; /*GLAPIENTRY*/
 
    // allocation d´une description de quadrique
@@ -302,7 +306,7 @@ void Faire_Composantes() {
   gluQuadricNormals(qobj, GLU_SMOOTH);
 
   // attribution des indentificateurs de display lists
-  Ma_Tete =  glGenLists(16);
+  Ma_Tete =  glGenLists(17);
   Ma_Tache = Ma_Tete + 1;
   Mon_Oeil = Ma_Tete + 2;
   Ma_Pupille = Ma_Tete + 3;
@@ -318,6 +322,7 @@ void Faire_Composantes() {
   Mon_Morceau_Bambou2 = Ma_Tete + 13;
   Ma_Feuille = Ma_Tete + 14;
   Ma_Branche = Ma_Tete + 15;
+  Ma_Branche_Feuille = Ma_Tete + 16;
 
   glNewList(Ma_Tache, GL_COMPILE);
     glColor3f(0.0, 0.0, 0.0);
@@ -357,47 +362,53 @@ void Faire_Composantes() {
 
   glNewList(Mon_Morceau_Bambou, GL_COMPILE);
     glColor3f(0.69, 0.79, 0.38);
-    gluCylinder(qobj, 0.5, 0.5, 3, 50, 1);
+    gluCylinder(qobj, 0.3, 0.3, 3, 50, 1);
   glEndList();
 
   glNewList(Mon_Morceau_Bambou2, GL_COMPILE);
     glColor3f(0.79, 0.89, 0.48);
-    gluCylinder(qobj, 0.52, 0.52, 0.14, 50, 1);
+    gluCylinder(qobj, 0.32, 0.32, 0.14, 50, 1);
   glEndList();
 
   glNewList(Ma_Feuille, GL_COMPILE);
     glColor3f(0.32, 0.50, 0.07);
     glBegin(GL_POLYGON);
       glVertex3f(0.0, 0.05, 0.0);
-      glVertex3f(0.0, 0.15, 1.0);
-      glVertex3f(0.0, 0.0, 3.0);
-      glVertex3f(0.0, -0.15, 1.0);
+      glVertex3f(-0.1, 0.15, 1.0);
+      glVertex3f(-0.3, 0.0, 2.0);
+      glVertex3f(-0.1, -0.15, 1.0);
       glVertex3f(0.0, -0.05, 0.0);
     glEnd();
   glEndList();
 
   glNewList(Ma_Branche, GL_COMPILE);
+    glColor3f(0.69, 0.79, 0.38);
+    gluCylinder(qobj, 0.04, 0.04, 5, 50, 1);
+     glPushMatrix();
+      glTranslatef(0, 0, 1.2);
+      glRotatef(20, 1, 0, 0);    
+      glCallList(Ma_Feuille);
+    glPopMatrix();
+    glPushMatrix();
+      glTranslatef(0, 0, 3.4);
+      glRotatef(-20, 1, 0, 0);    
+      glCallList(Ma_Feuille);
+    glPopMatrix();
+  glEndList();
+
+  glNewList(Ma_Branche_Feuille, GL_COMPILE);
     glPushMatrix();
       glColor3f(0.69, 0.79, 0.38);
       gluCylinder(qobj, 0.04, 0.04, 5, 50, 1);
     glPopMatrix();
     glTranslatef(0, 0, 1);
     glPushMatrix();
-      glRotatef(20, 1, 0, 0);
-      glCallList(Ma_Feuille);
-    glPopMatrix();
-    glPushMatrix();
       glTranslatef(0, 0, 1.2);
       glRotatef(20, 1, 0, 0);
       glCallList(Ma_Feuille);
     glPopMatrix();
     glPushMatrix();
-      glTranslatef(0, 0, 2.4);
-      glRotatef(20, 1, 0, 0);
-      glCallList(Ma_Feuille);
-    glPopMatrix();
-    glPushMatrix();
-      glTranslatef(0, 0, 3.6);
+      glTranslatef(0, 0, 3);
       glRotatef(20, 1, 0, 0);
       glCallList(Ma_Feuille);
     glPopMatrix();
@@ -407,16 +418,7 @@ void Faire_Composantes() {
       glCallList(Ma_Feuille);
     glPopMatrix();
     glPushMatrix();
-      glRotatef(-20, 1, 0, 0);
-      glCallList(Ma_Feuille);
-    glPopMatrix();
-    glPushMatrix();
-      glTranslatef(0, 0, 1.2);
-      glRotatef(-20, 1, 0, 0);
-      glCallList(Ma_Feuille);
-    glPopMatrix();
-    glPushMatrix();
-      glTranslatef(0, 0, 2.4);
+      glTranslatef(0, 0, 2.5);
       glRotatef(-20, 1, 0, 0);
       glCallList(Ma_Feuille);
     glPopMatrix();
@@ -492,27 +494,54 @@ void Faire_Composantes() {
     glPushMatrix();
       glTranslatef(4.0, 4.0, -5.0);
       glCallList(Mon_Morceau_Bambou);
+      for(i=0; i<6; i++)
+      {
+        glTranslatef(0.0, 0.0, 3.0);
+        glCallList(Mon_Morceau_Bambou2);
+        glCallList(Mon_Morceau_Bambou);
+      }
       glTranslatef(0.0, 0.0, 3.0);
       glCallList(Mon_Morceau_Bambou2);
-      glCallList(Mon_Morceau_Bambou);
-      glTranslatef(0.0, 0.0, 3.0);
-      glCallList(Mon_Morceau_Bambou2);
-      glCallList(Mon_Morceau_Bambou);
-      glTranslatef(0.0, 0.0, 3.0);
-      glCallList(Mon_Morceau_Bambou2);
-      glCallList(Mon_Morceau_Bambou);
-      glTranslatef(0.0, 0.0, 3.0);
-      glCallList(Mon_Morceau_Bambou2);
-      glCallList(Mon_Morceau_Bambou);
-      glTranslatef(0.0, 0.0, 3.0);
-      glCallList(Mon_Morceau_Bambou2);
-      glCallList(Mon_Morceau_Bambou);
-      glTranslatef(0.0, 0.0, 3.0);
-      glCallList(Mon_Morceau_Bambou2);
-      glCallList(Mon_Morceau_Bambou);
-      glTranslatef(0.0, 0.0, 3.0);
-      glCallList(Mon_Morceau_Bambou2);
-      glPushMatrix();
+
+      for(i=0; i<200; i++)
+      {
+        float trans;
+        int angle;
+        int angle2;
+        int angle3;
+        int angle4;
+        int angle5;
+        do
+        {
+          trans = -5*(rand()%50 + 5) / (float)(rand()%50 + 5);
+        }while(trans < -10);
+
+        angle = rand();
+        angle2 = (rand() % 100) + 80;
+        if(rand() % 2)
+          angle3 = (rand() % 50) + 20;
+        else
+          angle3 = -(rand() % 50) + 20;
+        angle4 = -(rand() % 50) + 20;
+        angle5 = -(rand() % 15);
+
+        glPushMatrix();
+          glScalef(0.5, 0.5, 0.5);
+          glTranslatef(0, 0, trans);
+          glRotatef(angle, 0, 0, 1);
+          glRotatef(angle2, 0, 1, 0);
+          glRotatef(angle3, 0, 0, 1);
+          glRotatef(angle4, 0, 1, 0);
+          if(rand() % 2)
+          {
+            glCallList(Ma_Branche);
+            glTranslatef(0, 0, 5);
+          }
+          glRotatef(angle5, 0, 1, 0);
+          glCallList(Ma_Branche_Feuille);
+        glPopMatrix();
+      }
+      /*glPushMatrix();
         glScalef(0.8, 0.8, 0.8);
         glRotatef(90, 0, 0, 1);
         glRotatef(90, 0, 1, 0);
@@ -525,8 +554,11 @@ void Faire_Composantes() {
         glRotatef(90, 0, 0, 1);
         glRotatef(-90, 0, 1, 0);
         glRotatef(30, 0, 0, 1);
-        glRotatef(-30, 0, 1, 0);
+        glRotatef(30, 0, 1, 0);
         glCallList(Ma_Branche);
+        glTranslatef(0, 0, 5);
+        glRotatef(-10, 0, 1, 0);
+        glCallList(Ma_Branche_Feuille);
       glPopMatrix();
       glPushMatrix();
         glTranslatef(0, 0, -1);
@@ -536,7 +568,7 @@ void Faire_Composantes() {
         glRotatef(30, 0, 0, 1);
         glRotatef(-40, 0, 1, 0);
         glCallList(Ma_Branche);
-      glPopMatrix();
+      glPopMatrix();*/
     glPopMatrix();
   glEndList();
 
@@ -594,7 +626,7 @@ void render_scene()
   // vertical comme sur la figure
   glRotatef(-90, 1, 0, 0);
 
-  lRotatef(-130, 0, 0, 1);
+  glRotatef(-90, 0, 0, 1);
 
   // rotation de 160 degres autour de l'axe Oz pour faire
   // avancer l'avatar vers le spectateur
