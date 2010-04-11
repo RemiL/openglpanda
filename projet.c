@@ -12,10 +12,10 @@ fitness for a particular purpose and is not liable under any
 circumstances for any damages or loss whatsoever arising from the use
 or inability to use this file or items derived from it.
 ******************************************************************************/
-#include <windows.h>  
+#include <windows.h>
 
-#include <GL/gl.h>           
-#include <GL/glu.h>         
+#include <GL/gl.h>
+#include <GL/glu.h>
 #include <GL/glut.h>
 
 #include <stdio.h>      
@@ -26,8 +26,8 @@ or inability to use this file or items derived from it.
 #define    windowHeight 600
 
 #define RED   0
-#define GREEN 100
-#define BLUE  0
+#define GREEN 0
+#define BLUE  1
 #define ALPHA 1
 
 #define true  1
@@ -59,6 +59,11 @@ int  Mon_Nez;
 int  Mon_AvantBras;
 int  Ma_Cuisse;
 int  Mon_Mollet;
+int  Mon_Morceau_Bambou;
+int  Mon_Bambou;
+int  Mon_Morceau_Bambou2;
+int  Ma_Feuille;
+int  Ma_Branche;
 int  Mon_Repere;
 
 enum lateralite{ Gauche = 0, Droit };
@@ -289,8 +294,15 @@ GLvoid window_timer()
 void Faire_Composantes() {
   GLUquadricObj* qobj; /*GLAPIENTRY*/
 
+   // allocation d´une description de quadrique
+  qobj = gluNewQuadric();
+  // la quadrique est pleine 
+  gluQuadricDrawStyle(qobj, GLU_FILL); 
+  // les ombrages, s´il y en a, sont doux
+  gluQuadricNormals(qobj, GLU_SMOOTH);
+
   // attribution des indentificateurs de display lists
-  Ma_Tete =  glGenLists(11);
+  Ma_Tete =  glGenLists(16);
   Ma_Tache = Ma_Tete + 1;
   Mon_Oeil = Ma_Tete + 2;
   Ma_Pupille = Ma_Tete + 3;
@@ -301,73 +313,155 @@ void Faire_Composantes() {
   Mon_AvantBras = Ma_Tete + 8;
   Ma_Cuisse = Ma_Tete + 9;
   Mon_Mollet = Ma_Tete + 10;
+  Mon_Morceau_Bambou = Ma_Tete + 11;
+  Mon_Bambou = Ma_Tete + 12;
+  Mon_Morceau_Bambou2 = Ma_Tete + 13;
+  Ma_Feuille = Ma_Tete + 14;
+  Ma_Branche = Ma_Tete + 15;
 
   glNewList(Ma_Tache, GL_COMPILE);
+    glColor3f(0.0, 0.0, 0.0);
     glScalef(0.3, 1.2, 1.6);
     glutSolidSphere(0.8, 50, 50);
   glEndList();
 
   glNewList(Mon_Oeil, GL_COMPILE);
+    glColor3f(1.0, 1.0, 1.0);
     glScalef(0.3, 1, 1);
     glutSolidSphere(0.4, 50, 50);
   glEndList();
 
   glNewList(Ma_Pupille, GL_COMPILE);
+    glColor3f(0.0, 0.0, 0.0);
     glScalef(0.3, 1, 1);
     glutSolidSphere(0.2, 50, 50);
   glEndList();
 
   glNewList(Mon_Oreille, GL_COMPILE);
+    glColor3f(0.0, 0.0, 0.0);
     glScalef(0.2, 1, 1);
     glutSolidSphere(1, 50, 50);
   glEndList();
 
   glNewList(Mon_Museau, GL_COMPILE);
+    glColor3f(1.0, 1.0, 1.0);
     glScalef(1.5, 1.8, 1.5);
     glutSolidSphere(1, 50, 50);
   glEndList();
 
   glNewList(Mon_Nez, GL_COMPILE);
+    glColor3f(0.0, 0.0, 0.0);
     glScalef(0.5, 1, 0.8);
     glutSolidSphere(0.2, 50, 50);
+  glEndList();
+
+  glNewList(Mon_Morceau_Bambou, GL_COMPILE);
+    glColor3f(0.69, 0.79, 0.38);
+    gluCylinder(qobj, 0.5, 0.5, 3, 50, 1);
+  glEndList();
+
+  glNewList(Mon_Morceau_Bambou2, GL_COMPILE);
+    glColor3f(0.79, 0.89, 0.48);
+    gluCylinder(qobj, 0.52, 0.52, 0.14, 50, 1);
+  glEndList();
+
+  glNewList(Ma_Feuille, GL_COMPILE);
+    glColor3f(0.32, 0.50, 0.07);
+    glBegin(GL_POLYGON);
+      glVertex3f(0.0, 0.05, 0.0);
+      glVertex3f(0.0, 0.15, 1.0);
+      glVertex3f(0.0, 0.0, 3.0);
+      glVertex3f(0.0, -0.15, 1.0);
+      glVertex3f(0.0, -0.05, 0.0);
+    glEnd();
+  glEndList();
+
+  glNewList(Ma_Branche, GL_COMPILE);
+    glPushMatrix();
+      glColor3f(0.69, 0.79, 0.38);
+      gluCylinder(qobj, 0.04, 0.04, 5, 50, 1);
+    glPopMatrix();
+    glTranslatef(0, 0, 1);
+    glPushMatrix();
+      glRotatef(20, 1, 0, 0);
+      glCallList(Ma_Feuille);
+    glPopMatrix();
+    glPushMatrix();
+      glTranslatef(0, 0, 1.2);
+      glRotatef(20, 1, 0, 0);
+      glCallList(Ma_Feuille);
+    glPopMatrix();
+    glPushMatrix();
+      glTranslatef(0, 0, 2.4);
+      glRotatef(20, 1, 0, 0);
+      glCallList(Ma_Feuille);
+    glPopMatrix();
+    glPushMatrix();
+      glTranslatef(0, 0, 3.6);
+      glRotatef(20, 1, 0, 0);
+      glCallList(Ma_Feuille);
+    glPopMatrix();
+    glPushMatrix();
+      glTranslatef(0, 0, 4);
+      glRotatef(10, 1, 0, 0);
+      glCallList(Ma_Feuille);
+    glPopMatrix();
+    glPushMatrix();
+      glRotatef(-20, 1, 0, 0);
+      glCallList(Ma_Feuille);
+    glPopMatrix();
+    glPushMatrix();
+      glTranslatef(0, 0, 1.2);
+      glRotatef(-20, 1, 0, 0);
+      glCallList(Ma_Feuille);
+    glPopMatrix();
+    glPushMatrix();
+      glTranslatef(0, 0, 2.4);
+      glRotatef(-20, 1, 0, 0);
+      glCallList(Ma_Feuille);
+    glPopMatrix();
+    glPushMatrix();
+      glTranslatef(0, 0, 3.6);
+      glRotatef(-20, 1, 0, 0);
+      glCallList(Ma_Feuille);
+    glPopMatrix();
+    glPushMatrix();
+      glTranslatef(0, 0, 4);
+      glRotatef(-10, 1, 0, 0);
+      glCallList(Ma_Feuille);
+    glPopMatrix();
   glEndList();
 
   // compilation de la display list de la sphère servant de tête
   glNewList(Ma_Tete, GL_COMPILE);
     // Tête en elle même
-	  glColor3f(1.0, 1.0, 1.0);
-	  glutSolidSphere(3.5, 50, 50);
-
-    glColor3f(0.0, 0.0, 0.0);
+    glColor3f(1.0, 1.0, 1.0);
+    glutSolidSphere(3.5, 50, 50);
 
     // Yeux
     glPushMatrix();
       glTranslatef(3.0, 0.0, 0.3);
       glPushMatrix();
         glTranslatef(0.0, 1.25, 0.0);
-		glRotatef(30, 1, 0, 0);
-		glRotatef(22, 0, 0, 1);
-		glRotatef(8, 0, 1, 0);
-		glCallList(Ma_Tache);
-        glColor3f(1.0, 1.0, 1.0);
-		glTranslatef(1, 0.0, 0.0);
+        glRotatef(30, 1, 0, 0);
+        glRotatef(22, 0, 0, 1);
+        glRotatef(8, 0, 1, 0);
+        glCallList(Ma_Tache);
+        glTranslatef(1, 0.0, 0.0);
         glCallList(Mon_Oeil);
-        glColor3f(0.0, 0.0, 0.0);
-		glTranslatef(0.5, 0.0, 0.0);
-		glCallList(Ma_Pupille);
+        glTranslatef(0.5, 0.0, 0.0);
+        glCallList(Ma_Pupille);
       glPopMatrix();
       glPushMatrix();
         glTranslatef(0.0, -1.25, 0.0);
-		glRotatef(-30, 1, 0, 0);
-		glRotatef(-22, 0, 0, 1);
-		glRotatef(8, 0, 1, 0);
+        glRotatef(-30, 1, 0, 0);
+        glRotatef(-22, 0, 0, 1);
+        glRotatef(8, 0, 1, 0);
         glCallList(Ma_Tache);
-		glColor3f(1.0, 1.0, 1.0);
-		glTranslatef(1, 0.0, 0.0);
+        glTranslatef(1, 0.0, 0.0);
         glCallList(Mon_Oeil);
-        glColor3f(0.0, 0.0, 0.0);
-		glTranslatef(0.5, 0.0, 0.0);
-		glCallList(Ma_Pupille);
+        glTranslatef(0.5, 0.0, 0.0);
+        glCallList(Ma_Pupille);
       glPopMatrix();
     glPopMatrix();
 
@@ -386,43 +480,87 @@ void Faire_Composantes() {
 
     // Museau
     glPushMatrix();
-      glColor3f(1.0, 1.0, 1.0);
       glTranslatef(2.4, 0.0, -1.3);
       glCallList(Mon_Museau);
-	  glColor3f(0.0, 0.0, .0);
-	  glTranslatef(1.0, 0.0, 0.0);
-	  glCallList(Mon_Nez);
+      glTranslatef(1.0, 0.0, 0.0);
+      glCallList(Mon_Nez);
     glPopMatrix();
   glEndList();
 
-  // allocation d´une description de quadrique
-  qobj = gluNewQuadric();
-  // la quadrique est pleine 
-  gluQuadricDrawStyle(qobj, GLU_FILL); 
-  // les ombrages, s´il y en a, sont doux
-  gluQuadricNormals(qobj, GLU_SMOOTH);
+  //Bambou
+  glNewList(Mon_Bambou, GL_COMPILE);
+    glPushMatrix();
+      glTranslatef(4.0, 4.0, -5.0);
+      glCallList(Mon_Morceau_Bambou);
+      glTranslatef(0.0, 0.0, 3.0);
+      glCallList(Mon_Morceau_Bambou2);
+      glCallList(Mon_Morceau_Bambou);
+      glTranslatef(0.0, 0.0, 3.0);
+      glCallList(Mon_Morceau_Bambou2);
+      glCallList(Mon_Morceau_Bambou);
+      glTranslatef(0.0, 0.0, 3.0);
+      glCallList(Mon_Morceau_Bambou2);
+      glCallList(Mon_Morceau_Bambou);
+      glTranslatef(0.0, 0.0, 3.0);
+      glCallList(Mon_Morceau_Bambou2);
+      glCallList(Mon_Morceau_Bambou);
+      glTranslatef(0.0, 0.0, 3.0);
+      glCallList(Mon_Morceau_Bambou2);
+      glCallList(Mon_Morceau_Bambou);
+      glTranslatef(0.0, 0.0, 3.0);
+      glCallList(Mon_Morceau_Bambou2);
+      glCallList(Mon_Morceau_Bambou);
+      glTranslatef(0.0, 0.0, 3.0);
+      glCallList(Mon_Morceau_Bambou2);
+      glPushMatrix();
+        glScalef(0.8, 0.8, 0.8);
+        glRotatef(90, 0, 0, 1);
+        glRotatef(90, 0, 1, 0);
+        glRotatef(30, 0, 0, 1);
+        glRotatef(30, 0, 1, 0);
+        glCallList(Ma_Branche);
+      glPopMatrix();
+      glPushMatrix();
+        glScalef(0.8, 0.8, 0.8);
+        glRotatef(90, 0, 0, 1);
+        glRotatef(-90, 0, 1, 0);
+        glRotatef(30, 0, 0, 1);
+        glRotatef(-30, 0, 1, 0);
+        glCallList(Ma_Branche);
+      glPopMatrix();
+      glPushMatrix();
+        glTranslatef(0, 0, -1);
+        glScalef(0.8, 0.8, 0.8);
+        glRotatef(70, 0, 0, 1);
+        glRotatef(-70, 0, 1, 0);
+        glRotatef(30, 0, 0, 1);
+        glRotatef(-40, 0, 1, 0);
+        glCallList(Ma_Branche);
+      glPopMatrix();
+    glPopMatrix();
+  glEndList();
 
   // compilation des display lists des cylindres
   glNewList(Mon_Tronc, GL_COMPILE);
-	  glColor3f(1.0, 1, 1);
+    glColor3f(1.0, 1, 1);
     glScalef(1.75, 1, 1);
-	  glutSolidSphere(6, 50, 50);
+    glutSolidSphere(6, 50, 50);
   glEndList();
 /*
   glNewList(Mon_Bras, GL_COMPILE);
-	gluCylinder(qobj, 0.5, 0.5, 5, 30, 30);
+  gluCylinder(qobj, 0.5, 0.5, 5, 30, 30);
   glEndList();
 */
   glNewList(Mon_AvantBras, GL_COMPILE);
-	gluCylinder(qobj, 0.5, 0.25, 5, 30, 30);
+  gluCylinder(qobj, 0.5, 0.25, 5, 30, 30);
   glEndList();
 
   glNewList(Ma_Cuisse, GL_COMPILE);
-	gluCylinder(qobj, 1.25, 0.75, 5, 30, 30);
+  gluCylinder(qobj, 1.25, 0.75, 5, 30, 30);
   glEndList();
 
   glNewList(Mon_Mollet, GL_COMPILE);
-	gluCylinder(qobj, 0.75, 0.25, 5, 30, 30);
+  gluCylinder(qobj, 0.75, 0.25, 5, 30, 30);
   glEndList();
 }
 
@@ -456,7 +594,7 @@ void render_scene()
   // vertical comme sur la figure
   glRotatef(-90, 1, 0, 0);
 
-  glRotatef(-180, 0, 0, 1);
+  lRotatef(-130, 0, 0, 1);
 
   // rotation de 160 degres autour de l'axe Oz pour faire
   // avancer l'avatar vers le spectateur
@@ -481,45 +619,48 @@ void render_scene()
   // les appels à glPushMatrix et glPopMatrix servent 
   // à sauvegarder et restaurer le contexte graphique
   glPushMatrix();
-	  glTranslatef(11.0, 0.0, 3.0);
-	  glCallList(Ma_Tete);
+    glTranslatef(11.0, 0.0, 3.0);
+    glCallList(Ma_Tete);
   glPopMatrix();
+
+  glCallList(Mon_Bambou);
+
 /*
   // tracé de la cuisse droite avec une translation vers
   // la droite et une rotation de 180° autour de Ox
   // pour l´orienter vers le bas
   glPushMatrix();
-	glColor3f(0.0, 1.0, 1.0); // cyan
-	glTranslatef(1.25, 0.0, 0.0);
-	glRotatef(180, 1.0, 0, 0);
+  glColor3f(0.0, 1.0, 1.0); // cyan
+  glTranslatef(1.25, 0.0, 0.0);
+  glRotatef(180, 1.0, 0, 0);
   glRotatef(angle_Cuisse[ Droit ], 1.0, 0.0, 0.0);
-	glCallList(Ma_Cuisse);
+  glCallList(Ma_Cuisse);
 
   // pour tracer le mollet, on reste dans le même
   // contexte graphique et on translate de
   // +5 selon Oz afin de mettre le repère au niveau
   // du genou
-	glPushMatrix();
-		glTranslatef(0.0, 0.0, 5.0);
+  glPushMatrix();
+    glTranslatef(0.0, 0.0, 5.0);
     glRotatef(angle_Mollet[ Droit ], 1.0, 0.0, 0.0);
-		glCallList(Mon_Mollet);
-	glPopMatrix();
+    glCallList(Mon_Mollet);
+  glPopMatrix();
   glPopMatrix();
 
   // cuisse et mollet gauches
   // seule la translation initiale change
   glPushMatrix();
-	  glColor3f(0.0, 0.0, 1.0); // bleu
-	  glTranslatef(-1.25, 0.0, 0.0);
-	  glRotatef(180, 1.0, 0, 0);
+    glColor3f(0.0, 0.0, 1.0); // bleu
+    glTranslatef(-1.25, 0.0, 0.0);
+    glRotatef(180, 1.0, 0, 0);
     glRotatef(angle_Cuisse[ Gauche ], 1.0, 0.0, 0.0);
-	  glCallList(Ma_Cuisse);
+    glCallList(Ma_Cuisse);
 
-	  glPushMatrix();
-		  glTranslatef(0.0, 0.0, 5.0);
+    glPushMatrix();
+      glTranslatef(0.0, 0.0, 5.0);
       glRotatef(angle_Mollet[ Gauche ], 1.0, 0.0, 0.0);
-		  glCallList(Mon_Mollet);
-	  glPopMatrix();
+      glCallList(Mon_Mollet);
+    glPopMatrix();
   glPopMatrix();
 
   // tracé du bras droit avec une translation vers
@@ -527,39 +668,39 @@ void render_scene()
   // rotation de 180° autour de Ox pour l´orienter
   // vers le bas
   glPushMatrix();
-	glColor3f(1.0, 0.0, 0.0);
-	glTranslatef(3.0, 0.0, 0.0);
-	glTranslatef(0.0, 0.0, 7.0);
-	glRotatef(180, 1.0, 0, 0);
+  glColor3f(1.0, 0.0, 0.0);
+  glTranslatef(3.0, 0.0, 0.0);
+  glTranslatef(0.0, 0.0, 7.0);
+  glRotatef(180, 1.0, 0, 0);
   glRotatef(angle_Bras[ Droit ], 1.0, 0, 0);
-	glCallList(Mon_Bras);
+  glCallList(Mon_Bras);
 
   // pour tracer l´avant-bras, on reste dans le même
   // contexte graphique et on translate de
   // +5 selon Oz afin de mettre le repère au niveau
   // du coude
-	glPushMatrix();
-		glTranslatef(0.0, 0.0, 5.0);
+  glPushMatrix();
+    glTranslatef(0.0, 0.0, 5.0);
     glRotatef(angle_AvantBras[ Droit ], 1.0, 0, 0);
-		glCallList(Mon_AvantBras);
-	glPopMatrix();
+    glCallList(Mon_AvantBras);
+  glPopMatrix();
   glPopMatrix();
 
   // bras et avant-bras gauches
   // seule la translation initiale change
   glPushMatrix();
-	glColor3f(1.0, 0.0, 1.0); // violet
-	glTranslatef(-3.0, 0.0, 0.0);
-	glTranslatef(0.0, 0.0, 7.0);
-	glRotatef(180, 1.0, 0, 0);
+  glColor3f(1.0, 0.0, 1.0); // violet
+  glTranslatef(-3.0, 0.0, 0.0);
+  glTranslatef(0.0, 0.0, 7.0);
+  glRotatef(180, 1.0, 0, 0);
   glRotatef(angle_Bras[ Gauche ], 1.0, 0, 0);
-	glCallList(Mon_Bras);
+  glCallList(Mon_Bras);
 
-	glPushMatrix();
-		glTranslatef(0.0, 0.0, 5.0);
+  glPushMatrix();
+    glTranslatef(0.0, 0.0, 5.0);
     glRotatef(angle_AvantBras[ Gauche ], 1.0, 0, 0);
-		glCallList(Mon_AvantBras);
-	glPopMatrix();
+    glCallList(Mon_AvantBras);
+  glPopMatrix();
   glPopMatrix();
 */
   // permutation des buffers lorsque le tracé est achevé
