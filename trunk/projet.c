@@ -49,10 +49,13 @@ int RangFichierStockage = 0;
 float position = position_Ini;
 
 int  Ma_Tete;
+int  Ma_Tache;
 int  Mon_Oeil;
+int  Ma_Pupille;
 int  Mon_Oreille;
 int  Mon_Tronc;
 int  Mon_Museau;
+int  Mon_Nez;
 int  Mon_AvantBras;
 int  Ma_Cuisse;
 int  Mon_Mollet;
@@ -287,19 +290,31 @@ void Faire_Composantes() {
   GLUquadricObj* qobj; /*GLAPIENTRY*/
 
   // attribution des indentificateurs de display lists
-  Ma_Tete =  glGenLists(8);
-  Mon_Oeil = Ma_Tete + 1;
-  Mon_Oreille = Ma_Tete + 2;
-  Mon_Museau = Ma_Tete + 3;
-  Mon_Tronc = Ma_Tete + 4;
-  Mon_AvantBras = Ma_Tete + 5;
-  Ma_Cuisse = Ma_Tete + 6;
-  Mon_Mollet = Ma_Tete + 7;
+  Ma_Tete =  glGenLists(11);
+  Ma_Tache = Ma_Tete + 1;
+  Mon_Oeil = Ma_Tete + 2;
+  Ma_Pupille = Ma_Tete + 3;
+  Mon_Oreille = Ma_Tete + 4;
+  Mon_Museau = Ma_Tete + 5;
+  Mon_Nez = Ma_Tete + 6;
+  Mon_Tronc = Ma_Tete + 7;
+  Mon_AvantBras = Ma_Tete + 8;
+  Ma_Cuisse = Ma_Tete + 9;
+  Mon_Mollet = Ma_Tete + 10;
+
+  glNewList(Ma_Tache, GL_COMPILE);
+    glScalef(0.3, 1.2, 1.6);
+    glutSolidSphere(0.8, 50, 50);
+  glEndList();
 
   glNewList(Mon_Oeil, GL_COMPILE);
-    glRotatef(-7, 0, 1, 0);
-    glScalef(0.1, 0.82, 1);
-    glutSolidSphere(0.8, 50, 50);
+    glScalef(0.3, 1, 1);
+    glutSolidSphere(0.4, 50, 50);
+  glEndList();
+
+  glNewList(Ma_Pupille, GL_COMPILE);
+    glScalef(0.3, 1, 1);
+    glutSolidSphere(0.2, 50, 50);
   glEndList();
 
   glNewList(Mon_Oreille, GL_COMPILE);
@@ -308,8 +323,13 @@ void Faire_Composantes() {
   glEndList();
 
   glNewList(Mon_Museau, GL_COMPILE);
-    glScalef(1.5, 1.1, 1.2);
+    glScalef(1.5, 1.8, 1.5);
     glutSolidSphere(1, 50, 50);
+  glEndList();
+
+  glNewList(Mon_Nez, GL_COMPILE);
+    glScalef(0.5, 1, 0.8);
+    glutSolidSphere(0.2, 50, 50);
   glEndList();
 
   // compilation de la display list de la sphère servant de tête
@@ -322,14 +342,32 @@ void Faire_Composantes() {
 
     // Yeux
     glPushMatrix();
-      glTranslatef(3.35, 0.0, 0.9);
+      glTranslatef(3.0, 0.0, 0.3);
       glPushMatrix();
         glTranslatef(0.0, 1.25, 0.0);
+		glRotatef(30, 1, 0, 0);
+		glRotatef(22, 0, 0, 1);
+		glRotatef(8, 0, 1, 0);
+		glCallList(Ma_Tache);
+        glColor3f(1.0, 1.0, 1.0);
+		glTranslatef(1, 0.0, 0.0);
         glCallList(Mon_Oeil);
+        glColor3f(0.0, 0.0, 0.0);
+		glTranslatef(0.5, 0.0, 0.0);
+		glCallList(Ma_Pupille);
       glPopMatrix();
       glPushMatrix();
         glTranslatef(0.0, -1.25, 0.0);
+		glRotatef(-30, 1, 0, 0);
+		glRotatef(-22, 0, 0, 1);
+		glRotatef(8, 0, 1, 0);
+        glCallList(Ma_Tache);
+		glColor3f(1.0, 1.0, 1.0);
+		glTranslatef(1, 0.0, 0.0);
         glCallList(Mon_Oeil);
+        glColor3f(0.0, 0.0, 0.0);
+		glTranslatef(0.5, 0.0, 0.0);
+		glCallList(Ma_Pupille);
       glPopMatrix();
     glPopMatrix();
 
@@ -348,9 +386,12 @@ void Faire_Composantes() {
 
     // Museau
     glPushMatrix();
-      glColor3f(1.0, 0.0, 1.0);
-      glTranslatef(2.4, 0.0, -0.3);
+      glColor3f(1.0, 1.0, 1.0);
+      glTranslatef(2.4, 0.0, -1.3);
       glCallList(Mon_Museau);
+	  glColor3f(0.0, 0.0, .0);
+	  glTranslatef(1.0, 0.0, 0.0);
+	  glCallList(Mon_Nez);
     glPopMatrix();
   glEndList();
 
@@ -415,11 +456,11 @@ void render_scene()
   // vertical comme sur la figure
   glRotatef(-90, 1, 0, 0);
 
-  //glRotatef(-90, 0, 0, 1);
+  glRotatef(-180, 0, 0, 1);
 
   // rotation de 160 degres autour de l'axe Oz pour faire
   // avancer l'avatar vers le spectateur
-  glRotatef(-160, 0, 0, 1);
+  //glRotatef(-180, 0, 0, 1);
 
   // rotation de 25 degres autour de la bissectrice de $Oy$ pour
   // voir la figure en perspective
