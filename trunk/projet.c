@@ -66,7 +66,10 @@ int  Mon_Morceau_Bambou2;
 int  Ma_Feuille;
 int  Ma_Branche;
 int  Ma_Branche_Feuille;
+
 int  Mon_Repere;
+int  Mon_Carre;
+int  Mon_Cube;
 
 enum lateralite{ Gauche = 0, Droit };
 
@@ -104,6 +107,25 @@ static GLfloat ambient_light1[] = { 0.50 , 0.50 , 0.50 , 1.0 };
 static GLfloat diffuse_light1[] = { 0.5 , 1.0 , 1.0 , 1.0 };
 static GLfloat specular_light1[] = { 0.5 , 1.0 , 1.0 , 1.0 };
 
+// Gestion caméra
+typedef struct
+{
+  double x;
+  double y;
+  double z;
+} t_coordonnees;
+
+typedef struct
+{
+  t_coordonnees position;
+  t_coordonnees vecteur_observation;
+  t_coordonnees vecteur_def_vertical;
+  t_coordonnees vecteur_normal;
+  double pas;
+} t_camera;
+
+t_camera camera;
+
 int Step = 0;
 int latence = 4;
 
@@ -117,6 +139,13 @@ GLvoid window_key(unsigned char key, int x, int y);
 GLvoid window_timer(); 
 void Faire_Composantes();
 void Dessine_Repere();
+void faire_cube(int cote);
+void init_camera(double x, double y, double z,
+                 double vect_ob_x, double vect_ob_y, double vect_ob_z,
+                 double vect_vert_x, double vect_vert_y, double vect_vert_z,
+                 double pas);
+void addition_vectorielle(t_coordonnees *r, double coeff_a, t_coordonnees a, double coeff_b, t_coordonnees b);
+void produit_vectoriel(t_coordonnees *r, t_coordonnees a, t_coordonnees b);
 
 int main(int argc, char **argv) 
 {
@@ -142,6 +171,7 @@ int main(int argc, char **argv)
   glutReshapeFunc(&window_reshape);
   // la gestion des événements clavier
   glutKeyboardFunc(&window_key);
+  glutSpecialFunc(&window_key); // pour les touches spéciales (flèches directionnelles, ...)
   // fonction appelée régulièrement entre deux gestions d´événements
   glutTimerFunc(latence,&window_timer,Step);
 
@@ -187,8 +217,14 @@ GLvoid initGL()
   
 void init_scene()
 {
+  // Dessine un cube centré sur l'origine
+  faire_cube(100);
+  
   // initialise des display lists des composantes cylindriques du corps
   Faire_Composantes();
+
+  // Initialisation camera
+  init_camera(30, 0, 0, -1, 0, 0, 0, 0, 1, 1);
 
   amplitude_Bras 
     = .5 * (angle_Bras_Ini[ Droit ] - angle_Bras_Ini[ Gauche ]);
@@ -215,6 +251,18 @@ GLvoid window_display()
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   glLoadIdentity();
 
+  // Posionnement caméra
+  gluLookAt(camera.position.x,
+            camera.position.y,
+            camera.position.z,
+            camera.position.x + camera.vecteur_observation.x,
+            camera.position.y + camera.vecteur_observation.y,
+            camera.position.z + camera.vecteur_observation.z,
+            camera.vecteur_def_vertical.x,
+            camera.vecteur_def_vertical.y,
+            camera.vecteur_def_vertical.z);
+  
+  // Tracé de la scène
   render_scene();
 
   // trace la scène grapnique qui vient juste d'être définie
@@ -229,8 +277,9 @@ GLvoid window_reshape(GLsizei width, GLsizei height)
 
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
-  glOrtho(-20, 20, -20, 20, -1000, 1000);
+  // glOrtho(-20, 20, -20, 20, -1000, 1000);
   // glFrustum(-20, 20, -20, 20, 10, 1000);
+  gluPerspective(70, (float) width / height, 1, 1000);
   // glScalef(10, 10, 10);
 
   // toutes les transformations suivantes s´appliquent au modèle de vue 
@@ -241,29 +290,46 @@ GLvoid window_reshape(GLsizei width, GLsizei height)
 
 GLvoid window_key(unsigned char key, int x, int y) 
 {  
-  switch (key) {    
-  case KEY_ESC:  
-    exit(1);                    
-    break; 
-  case ' ':
-    if (IdleRunning) {
-      glutTimerFunc(latence,&window_timer,Step);
-      IdleRunning = false;
-    } 
-    else {
-      //glutTimerFunc(latence,NULL,Step);
-      IdleRunning = true;
-    }
-    break; 
-  case '+':  
-    delta *= 1.01;
-    break; 
-  case '-':  
-    delta /= 1.01;
-    break; 
-  default:
-    printf ("La touche %d n´est pas active.\n", key);
-    break;
+  switch (key) {
+    case KEY_ESC:  
+      exit(1);                    
+      break; 
+    case ' ':
+      if (IdleRunning) {
+        glutTimerFunc(latence,&window_timer,Step);
+        IdleRunning = false;
+      } 
+      else {
+        //glutTimerFunc(latence,NULL,Step);
+        IdleRunning = true;
+      }
+      break; 
+    case '+':  
+      delta *= 1.01;
+      break; 
+    case '-':  
+      delta /= 1.01;
+      break;
+    // Gestion mouvements caméra
+    case GLUT_KEY_UP:
+      printf("GLUT_KEY_UP\n");
+      addition_vectorielle(&camera.position, 1, camera.position, camera.pas, camera.vecteur_observation);
+      break;
+    case GLUT_KEY_DOWN:
+      printf("GLUT_KEY_DOWN\n");
+      addition_vectorielle(&camera.position, 1, camera.position, -camera.pas, camera.vecteur_observation);
+      break;
+    case GLUT_KEY_RIGHT:
+      printf("GLUT_KEY_LEFT\n");
+      addition_vectorielle(&camera.position, 1, camera.position, camera.pas, camera.vecteur_normal);
+      break;
+    case GLUT_KEY_LEFT:
+      printf("GLUT_KEY_RIGHT\n");
+      addition_vectorielle(&camera.position, 1, camera.position, -camera.pas, camera.vecteur_normal);
+      break;
+    default:
+      printf ("La touche %d n´est pas active.\n", key);
+      break;
   }     
 }
 
@@ -291,6 +357,63 @@ GLvoid window_timer()
     glutTimerFunc(latence,&window_timer,++Step);
 
   glutPostRedisplay();
+}
+
+void faire_cube(int cote)
+{
+  Mon_Carre = glGenLists(2);
+  Mon_Cube = Mon_Carre + 1;
+  
+  glNewList(Mon_Carre, GL_COMPILE);
+    glBegin(GL_POLYGON);
+      glVertex3f(cote/2, -cote/2, 0);
+      glVertex3f(cote/2, cote/2, 0);
+      glVertex3f(-cote/2, cote/2, 0);
+      glVertex3f(-cote/2, -cote/2, 0);  
+    glEnd();  
+  glEndList();
+
+  glNewList(Mon_Cube, GL_COMPILE);
+    glColor3f(1, 0, 0);
+    glPushMatrix();
+      glTranslatef(0, 0, -cote/2);
+      glCallList(Mon_Carre);
+    glPopMatrix();
+
+    glColor3f(1, 1, 0);
+    glPushMatrix();
+      glTranslatef(0, 0, cote/2);
+      glCallList(Mon_Carre);
+    glPopMatrix();
+    
+    glColor3f(0, 1, 0);
+    glPushMatrix();
+      glTranslatef(-cote/2, 0, 0);
+      glRotatef(90, 0, 1, 0);
+      glCallList(Mon_Carre);
+    glPopMatrix();
+
+    glColor3f(0, 1, 1);
+    glPushMatrix();
+      glTranslatef(cote/2, 0, 0);
+      glRotatef(90, 0, 1, 0);
+      glCallList(Mon_Carre);
+    glPopMatrix();
+    
+    glColor3f(0.5, 0.5, 0.5);
+    glPushMatrix();
+      glTranslatef(0, -cote/2, 0);
+      glRotatef(-90, 1, 0, 0);
+      glCallList(Mon_Carre);
+    glPopMatrix();
+
+    glColor3f(1, 0, 1);
+    glPushMatrix();
+      glTranslatef(0, cote/2, 0);
+      glRotatef(-90, 1, 0, 0);
+      glCallList(Mon_Carre);
+    glPopMatrix();
+  glEndList();
 }
 
 // un cylindre
@@ -624,9 +747,9 @@ void render_scene()
 {
   // rotation de 90 degres autour de Ox pour mettre l'axe Oz 
   // vertical comme sur la figure
-  glRotatef(-90, 1, 0, 0);
+  //glRotatef(-90, 1, 0, 0);
 
-  glRotatef(-90, 0, 0, 1);
+  //glRotatef(150, 1, 1, 1);
 
   // rotation de 160 degres autour de l'axe Oz pour faire
   // avancer l'avatar vers le spectateur
@@ -640,6 +763,11 @@ void render_scene()
   // une impression de déplacement horizontal accompagnant
   // la marche
   // glTranslatef( 0, position, 0);
+  
+  // Tracé d'un cube pour délimiter l'espace
+  glPushMatrix();
+    glCallList(Mon_Cube);
+  glPopMatrix();
 
   // tracé du tronc, aucune transformation n´est
   // requise
@@ -739,3 +867,47 @@ void render_scene()
   glutSwapBuffers();
 }
 
+void init_camera(double x, double y, double z,
+                 double vect_ob_x, double vect_ob_y, double vect_ob_z,
+                 double vect_vert_x, double vect_vert_y, double vect_vert_z,
+                 double pas)
+{
+  double vect_ob_norme = sqrt(vect_ob_x*vect_ob_x + vect_ob_y*vect_ob_y + vect_ob_z*vect_ob_z);
+  double vect_vert_norme = sqrt(vect_vert_x*vect_vert_x + vect_vert_y*vect_vert_y + vect_vert_z*vect_vert_z);
+  
+  camera.position.x = x;
+  camera.position.y = y;
+  camera.position.z = z;
+
+  camera.vecteur_observation.x = vect_ob_x / vect_ob_norme;
+  camera.vecteur_observation.y = vect_ob_y / vect_ob_norme;
+  camera.vecteur_observation.z = vect_ob_z / vect_ob_norme;
+
+  camera.vecteur_def_vertical.x = vect_vert_x / vect_vert_norme;
+  camera.vecteur_def_vertical.y = vect_vert_y / vect_vert_norme;
+  camera.vecteur_def_vertical.z = vect_vert_z / vect_vert_norme;
+
+  produit_vectoriel(&camera.vecteur_normal, camera.vecteur_observation, camera.vecteur_def_vertical);
+
+  camera.pas = pas;
+}
+
+void addition_vectorielle(t_coordonnees *r, double coeff_a, t_coordonnees a, double coeff_b, t_coordonnees b)
+{
+  if (r != NULL)
+  {
+    r->x = coeff_a*a.x + coeff_b*b.x;
+    r->y = coeff_a*a.y + coeff_b*b.y;
+    r->z = coeff_a*a.z + coeff_b*b.z;
+  }
+}
+
+void produit_vectoriel(t_coordonnees *r, t_coordonnees a, t_coordonnees b)
+{
+  if (r != NULL)
+  {
+    r->x = a.y*b.z - a.z*b.y;
+    r->y = a.z*b.x - a.x*b.z;
+    r->x = a.x*b.y - a.y*b.x;
+  }
+}
