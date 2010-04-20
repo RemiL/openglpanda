@@ -454,7 +454,7 @@ void faire_cube(int cote)
       glCallList(Mon_Carre);
     glPopMatrix();
     
-    glColor3f(0, 1, 0);
+    glColor3f(0, 0, 1);
     glPushMatrix();
       glTranslatef(-cote/2, 0, 0);
       glRotatef(90, 0, 1, 0);
@@ -553,44 +553,50 @@ void Faire_Composantes() {
 
   glNewList(Mon_Morceau_Bambou, GL_COMPILE);
     glColor3f(0.69, 0.79, 0.38);
-    gluCylinder(qobj, 0.3, 0.3, 3, 50, 1);
-    gluDisk(qobj, 0, 0.3, 50, 1);
+    gluCylinder(qobj, 0.2, 0.2, 3, 50, 1);
+    gluDisk(qobj, 0, 0.2, 50, 1);
     glPushMatrix();
       glTranslatef(0, 0, 3);
-      gluDisk(qobj, 0, 0.3, 50, 1);
+      gluDisk(qobj, 0, 0.2, 50, 1);
     glPopMatrix();
   glEndList();
 
   glNewList(Mon_Morceau_Bambou2, GL_COMPILE);
     glColor3f(0.79, 0.89, 0.48);
-    gluCylinder(qobj, 0.32, 0.32, 0.14, 50, 1);
-    gluDisk(qobj, 0, 0.32, 50, 1);
+    gluCylinder(qobj, 0.21, 0.21, 0.14, 50, 1);
+    gluDisk(qobj, 0, 0.21, 50, 1);
     glTranslatef(0, 0, 0.14);
-    gluDisk(qobj, 0, 0.32, 50, 1);
+    gluDisk(qobj, 0, 0.21, 50, 1);
   glEndList();
 
   glNewList(Ma_Feuille, GL_COMPILE);
     glColor3f(0.32, 0.50, 0.07);
     glBegin(GL_POLYGON);
-      glVertex3f(0.0, 0.05, 0.0);
-      glVertex3f(-0.1, 0.15, 1.0);
-      glVertex3f(-0.3, 0.0, 2.0);
-      glVertex3f(-0.1, -0.15, 1.0);
-      glVertex3f(0.0, -0.05, 0.0);
+      glVertex3f(0.0, 0.0, 0.0);
+      glVertex3f(-0.15, 0.0, 0.25);
+      glVertex3f(-0.3, 0.0, 0.5);
+      glVertex3f(-0.0, 0.0, 3.0);
+      glVertex3f(0.3, 0.0, 0.5);
+      glVertex3f(0.15, 0.0, 0.25);
     glEnd();
   glEndList();
 
   glNewList(Ma_Branche, GL_COMPILE);
     glColor3f(0.69, 0.79, 0.38);
     gluCylinder(qobj, 0.04, 0.04, 5, 50, 1);
-     glPushMatrix();
+    gluDisk(qobj, 0, 0.04, 50, 1);
+    glPushMatrix();
+      glTranslatef(0, 0, 5);
+      gluDisk(qobj, 0, 0.04, 50, 1);
+    glPopMatrix();
+    glPushMatrix();
       glTranslatef(0, 0, 1.2);
-      glRotatef(20, 1, 0, 0);    
+      glRotatef(20, 1, 0, 0);
       glCallList(Ma_Feuille);
     glPopMatrix();
     glPushMatrix();
       glTranslatef(0, 0, 3.4);
-      glRotatef(-20, 1, 0, 0);    
+      glRotatef(-20, 1, 0, 0);   
       glCallList(Ma_Feuille);
     glPopMatrix();
   glEndList();
@@ -599,6 +605,11 @@ void Faire_Composantes() {
     glPushMatrix();
       glColor3f(0.69, 0.79, 0.38);
       gluCylinder(qobj, 0.04, 0.04, 5, 50, 1);
+      gluDisk(qobj, 0, 0.04, 50, 1);
+      glPushMatrix();
+        glTranslatef(0, 0, 5);
+        gluDisk(qobj, 0, 0, 50, 1);
+      glPopMatrix();
     glPopMatrix();
     glTranslatef(0, 0, 1);
     glPushMatrix();
@@ -627,7 +638,7 @@ void Faire_Composantes() {
       glCallList(Ma_Feuille);
     glPopMatrix();
     glPushMatrix();
-      glTranslatef(0, 0, 4);
+      glTranslatef(0, -0.03, 4);
       glRotatef(-10, 1, 0, 0);
       glCallList(Ma_Feuille);
     glPopMatrix();
@@ -693,7 +704,7 @@ void Faire_Composantes() {
     glPushMatrix();
       glTranslatef(4.0, 4.0, -5.0);
       glCallList(Mon_Morceau_Bambou);
-      for(i=0; i<6; i++)
+      for(i=0; i<10; i++)
       {
         glTranslatef(0.0, 0.0, 3.0);
         glCallList(Mon_Morceau_Bambou2);
@@ -702,7 +713,78 @@ void Faire_Composantes() {
       glTranslatef(0.0, 0.0, 3.0);
       glCallList(Mon_Morceau_Bambou2);
 
-      for(i=0; i<200; i++)
+      glPushMatrix();
+        glTranslatef(0, 0, -1);
+        glRotatef(20, 0, 1, 0);
+        glCallList(Ma_Branche_Feuille);
+      glPopMatrix();
+      glPushMatrix();
+        glTranslatef(0, 0, -9);
+        glRotatef(10, 1, 0, 0);
+        glCallList(Ma_Branche);
+        glPushMatrix();
+          glTranslatef(0, 0, 5);
+          glRotatef(10, 1, 0, 0);
+          glCallList(Ma_Branche_Feuille);
+        glPopMatrix();
+        glPushMatrix();
+          glTranslatef(0, 0, 5);
+          glRotatef(20, 1, 0, 0);
+          glRotatef(30, 0, 1, 0);
+          glRotatef(90, 0, 0, 1);
+          glCallList(Ma_Branche_Feuille);
+        glPopMatrix();
+      glPopMatrix();
+
+      glPushMatrix();
+        glTranslatef(0, 0, -15);
+        glRotatef(10, 0, 1, 0);
+        glCallList(Ma_Branche);
+        glPushMatrix();
+          glTranslatef(0, 0, 5);
+          glRotatef(-20, 1, 0, 0);
+          glRotatef(10, 0, 1, 0);
+          glRotatef(10, 0, 0, 1);
+          glCallList(Ma_Branche_Feuille);
+        glPopMatrix();
+      glPopMatrix();
+
+      glPushMatrix();
+        glTranslatef(0, 0, -20);
+        glRotatef(-20, 0, 1, 0);
+        glCallList(Ma_Branche);
+        glPushMatrix();
+          glTranslatef(0, 0, 5);
+          glRotatef(-20, 1, 0, 0);
+          glRotatef(10, 0, 1, 0);
+          glRotatef(10, 0, 0, 1);
+          glCallList(Ma_Branche_Feuille);
+        glPopMatrix();
+      glPopMatrix();
+
+      glPushMatrix();
+        glTranslatef(0, 0, -30);
+        glRotatef(40, 0, 0, 1);
+        glRotatef(-15, 1, 0, 0);
+        glCallList(Ma_Branche);
+        glTranslatef(0, 0, 5);
+        glRotatef(-5, 1, 0, 0);
+        glCallList(Ma_Branche);
+        glPushMatrix();
+          glTranslatef(0, 0, 5);
+          glRotatef(-20, 1, 0, 0);
+          glRotatef(10, 0, 1, 0);
+          glRotatef(10, 0, 0, 1);
+          glCallList(Ma_Branche_Feuille);
+        glPopMatrix();
+        glPushMatrix();
+          glRotatef(20, 1, 0, 0);
+          glRotatef(-10, 0, 1, 0);
+          glRotatef(10, 0, 0, 1);
+          glCallList(Ma_Branche_Feuille);
+        glPopMatrix();
+      glPopMatrix();
+      /*for(i=0; i<200; i++)
       {
         float trans;
         int angle;
@@ -739,7 +821,7 @@ void Faire_Composantes() {
           glRotatef(angle5, 0, 1, 0);
           glCallList(Ma_Branche_Feuille);
         glPopMatrix();
-      }
+      }*/
       /*glPushMatrix();
         glScalef(0.8, 0.8, 0.8);
         glRotatef(90, 0, 0, 1);
