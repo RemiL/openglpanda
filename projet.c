@@ -66,6 +66,8 @@ int  Mon_Morceau_Bambou2;
 int  Ma_Feuille;
 int  Ma_Branche;
 int  Ma_Branche_Feuille;
+int  Mon_Corps;
+int  Ma_Jambe;
 
 int  Mon_Repere;
 int  Mon_Carre;
@@ -514,6 +516,8 @@ void Faire_Composantes() {
   Ma_Feuille = Ma_Tete + 14;
   Ma_Branche = Ma_Tete + 15;
   Ma_Branche_Feuille = Ma_Tete + 16;
+  Mon_Corps = Ma_Tete + 17;
+  Ma_Jambe = Ma_Tete + 18;
 
   glNewList(Ma_Tache, GL_COMPILE);
     glColor3f(0.0, 0.0, 0.0);
@@ -641,6 +645,34 @@ void Faire_Composantes() {
       glTranslatef(0, -0.03, 4);
       glRotatef(-10, 1, 0, 0);
       glCallList(Ma_Feuille);
+    glPopMatrix();
+  glEndList();
+
+  glNewList(Mon_Corps, GL_COMPILE);
+    glPushMatrix();
+      glColor3f(1.0, 1.0, 1.0);
+      glScalef(1, 0.75, 0.75);
+      glutSolidSphere(5, 50, 50);
+    glPopMatrix();
+    glPushMatrix();
+      glColor3f(0.0, 0.0, 0.0);
+      glTranslatef(1.6, 0, 0);
+      glScalef(0.6, 0.75, 0.75);
+      glutSolidSphere(4.8, 50, 50);
+    glPopMatrix();
+    glPushMatrix();
+      glColor3f(0.0, 0.0, 0.0);
+      glTranslatef(-4.8, 0, 1.8);
+      glScalef(0.7, 1, 1);
+      glutSolidSphere(1, 50, 50);
+    glPopMatrix();
+  glEndList();
+
+  glNewList(Ma_Jambe, GL_COMPILE);
+    glPushMatrix();
+      glColor3f(0.0, 0.0, 0.0);
+      glScalef(0.5, 0.5, 1);
+      glutSolidSphere(2.5, 50, 50);
     glPopMatrix();
   glEndList();
 
@@ -939,6 +971,26 @@ void render_scene()
   glPushMatrix();
     glTranslatef(11.0, 0.0, 3.0);
     glCallList(Ma_Tete);
+    glPushMatrix();
+      glTranslatef(-5.5, 0, -1);
+      glCallList(Mon_Corps);
+      glPushMatrix();
+        glTranslatef(-2.5, 2, -3.5);
+        glCallList(Ma_Jambe);
+      glPopMatrix();
+      glPushMatrix();
+        glTranslatef(-2.5, -2, -3.5);
+        glCallList(Ma_Jambe);
+      glPopMatrix();
+      glPushMatrix();
+        glTranslatef(2.4, 2, -3.5);
+        glCallList(Ma_Jambe);
+      glPopMatrix();
+      glPushMatrix();
+        glTranslatef(2.4, -2, -3.5);
+        glCallList(Ma_Jambe);
+      glPopMatrix();
+    glPopMatrix();
   glPopMatrix();
 
   glCallList(Mon_Bambou);
