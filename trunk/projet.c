@@ -107,6 +107,8 @@ static GLfloat ambient_light1[] = { 0.50 , 0.50 , 0.50 , 1.0 };
 static GLfloat diffuse_light1[] = { 0.5 , 1.0 , 1.0 , 1.0 };
 static GLfloat specular_light1[] = { 0.5 , 1.0 , 1.0 , 1.0 };
 
+int window_width, window_height;
+
 // Gestion caméra
 typedef struct
 {
@@ -121,10 +123,17 @@ typedef struct
   t_coordonnees vecteur_observation;
   t_coordonnees vecteur_def_vertical;
   t_coordonnees vecteur_normal;
+  t_coordonnees vecteur_observation_initial;
+  t_coordonnees vecteur_def_vertical_initial;
+  t_coordonnees vecteur_normal_initial;
+  double angle_h;
+  double angle_v;
   double pas;
 } t_camera;
 
 t_camera camera;
+int position_clique_x, position_clique_y;
+int camera_deplacement_active = false;
 
 int Step = 0;
 int latence = 4;
@@ -135,7 +144,9 @@ void init_angles();
 GLvoid initGL();
 GLvoid window_display();
 GLvoid window_reshape(GLsizei width, GLsizei height); 
-GLvoid window_key(unsigned char key, int x, int y); 
+GLvoid window_key(unsigned char key, int x, int y);
+GLvoid window_cliques_souris(int button, int state, int x, int y);
+GLvoid window_mouvements_souris(int x, int y);
 GLvoid window_timer(); 
 void Faire_Composantes();
 void Dessine_Repere();
@@ -145,7 +156,9 @@ void init_camera(double x, double y, double z,
                  double vect_vert_x, double vect_vert_y, double vect_vert_z,
                  double pas);
 void addition_vectorielle(t_coordonnees *r, double coeff_a, t_coordonnees a, double coeff_b, t_coordonnees b);
+double produit_scalaire(t_coordonnees a, t_coordonnees b);
 void produit_vectoriel(t_coordonnees *r, t_coordonnees a, t_coordonnees b);
+void normaliser_vecteur(t_coordonnees *v);
 
 int main(int argc, char **argv) 
 {
@@ -172,6 +185,10 @@ int main(int argc, char **argv)
   // la gestion des événements clavier
   glutKeyboardFunc(&window_key);
   glutSpecialFunc(&window_key); // pour les touches spéciales (flèches directionnelles, ...)
+  // Gestion des cliques souris
+  glutMouseFunc(&window_cliques_souris);
+  // Gestion des mouvements de la souris
+  glutMotionFunc(&window_mouvements_souris);
   // fonction appelée régulièrement entre deux gestions d´événements
   glutTimerFunc(latence,&window_timer,Step);
 
@@ -251,7 +268,7 @@ GLvoid window_display()
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   glLoadIdentity();
 
-  // Posionnement caméra
+  // Positionnement caméra
   gluLookAt(camera.position.x,
             camera.position.y,
             camera.position.z,
@@ -273,6 +290,8 @@ GLvoid window_display()
 
 GLvoid window_reshape(GLsizei width, GLsizei height)
 {  
+  window_width = width;
+  window_height = height;
   glViewport(0, 0, width, height);
 
   glMatrixMode(GL_PROJECTION);
@@ -331,6 +350,55 @@ GLvoid window_key(unsigned char key, int x, int y)
       printf ("La touche %d n´est pas active.\n", key);
       break;
   }     
+}
+
+// Fonction de gestion des cliques souris
+GLvoid window_cliques_souris(int button, int state, int x, int y)
+{
+  if (state == GLUT_DOWN && button == GLUT_LEFT_BUTTON)
+  {
+    position_clique_x = x;
+    position_clique_y = y;
+    camera_deplacement_active = true;
+  }
+  else
+    camera_deplacement_active = false;
+}
+
+// Fonction de gestion des mouvements de la souris
+GLvoid window_mouvements_souris(int x, int y)
+{
+  if (camera_deplacement_active)
+  {
+    camera.angle_h += (double)(x-position_clique_x) * PI / window_width;
+    camera.angle_v += (double)(y-position_clique_y) * PI / window_height;
+
+    position_clique_x = x;
+    position_clique_y = y;
+    
+    // On limite l'angle d'inclinaison de la caméra à +/- PI/2
+    if (camera.angle_v < -PI/2)
+      camera.angle_v = -PI/2;
+    else if (camera.angle_v > PI/2)
+      camera.angle_v = PI/2;
+    
+    // Rotation par rapport au vecteur définissant la verticale de la caméra
+    addition_vectorielle(&camera.vecteur_observation,
+                         cos(camera.angle_h), camera.vecteur_observation_initial,
+                         sin(camera.angle_h), camera.vecteur_normal_initial);
+    // On recalcule le nouveau vecteur normal
+    produit_vectoriel(&camera.vecteur_normal, camera.vecteur_observation, camera.vecteur_def_vertical_initial);
+
+    // Rotation par rapport au vecteur normal de la caméra
+    addition_vectorielle(&camera.vecteur_observation,
+                         cos(camera.angle_v), camera.vecteur_observation,
+                         -sin(camera.angle_v), camera.vecteur_def_vertical_initial);
+    // On recalcule le nouveau vecteur définissant la verticale
+    produit_vectoriel(&camera.vecteur_def_vertical, camera.vecteur_normal, camera.vecteur_observation);
+    
+    // On met à jour l'affichage
+    glutPostRedisplay();
+  }
 }
 
 // fonction de call-back appelée régulièrement
@@ -879,21 +947,24 @@ void init_camera(double x, double y, double z,
   camera.position.y = y;
   camera.position.z = z;
 
-  camera.vecteur_observation.x = vect_ob_x / vect_ob_norme;
-  camera.vecteur_observation.y = vect_ob_y / vect_ob_norme;
-  camera.vecteur_observation.z = vect_ob_z / vect_ob_norme;
+  camera.vecteur_observation_initial.x = camera.vecteur_observation.x = vect_ob_x / vect_ob_norme;
+  camera.vecteur_observation_initial.y = camera.vecteur_observation.y = vect_ob_y / vect_ob_norme;
+  camera.vecteur_observation_initial.z = camera.vecteur_observation.z = vect_ob_z / vect_ob_norme;
 
-  camera.vecteur_def_vertical.x = vect_vert_x / vect_vert_norme;
-  camera.vecteur_def_vertical.y = vect_vert_y / vect_vert_norme;
-  camera.vecteur_def_vertical.z = vect_vert_z / vect_vert_norme;
+  camera.vecteur_def_vertical_initial.x = camera.vecteur_def_vertical.x = vect_vert_x / vect_vert_norme;
+  camera.vecteur_def_vertical_initial.y = camera.vecteur_def_vertical.y = vect_vert_y / vect_vert_norme;
+  camera.vecteur_def_vertical_initial.z = camera.vecteur_def_vertical.z = vect_vert_z / vect_vert_norme;
 
   produit_vectoriel(&camera.vecteur_normal, camera.vecteur_observation, camera.vecteur_def_vertical);
+  produit_vectoriel(&camera.vecteur_normal_initial, camera.vecteur_observation_initial, camera.vecteur_def_vertical_initial);
+
+  camera.angle_h = camera.angle_v = 0;
 
   camera.pas = pas;
 }
 
 void addition_vectorielle(t_coordonnees *r, double coeff_a, t_coordonnees a, double coeff_b, t_coordonnees b)
-{
+{  
   if (r != NULL)
   {
     r->x = coeff_a*a.x + coeff_b*b.x;
@@ -902,12 +973,26 @@ void addition_vectorielle(t_coordonnees *r, double coeff_a, t_coordonnees a, dou
   }
 }
 
+double produit_scalaire(t_coordonnees a, t_coordonnees b)
+{
+  return (a.x*b.x + a.y*b.y + a.z*b.z);
+}
+
 void produit_vectoriel(t_coordonnees *r, t_coordonnees a, t_coordonnees b)
 {
   if (r != NULL)
   {
     r->x = a.y*b.z - a.z*b.y;
     r->y = a.z*b.x - a.x*b.z;
-    r->x = a.x*b.y - a.y*b.x;
+    r->z = a.x*b.y - a.y*b.x;
   }
+}
+
+void normaliser_vecteur(t_coordonnees *v)
+{
+  double norme = sqrt(v->x*v->x + v->y*v->y + v->z*v->z);
+
+  v->x /= norme;
+  v->y /= norme;
+  v->z /= norme;
 }
