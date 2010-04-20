@@ -523,13 +523,13 @@ void Faire_Composantes() {
 
   glNewList(Mon_Oeil, GL_COMPILE);
     glColor3f(1.0, 1.0, 1.0);
-    glScalef(0.3, 1, 1);
+    glScalef(0.3, 1.3, 1.3);
     glutSolidSphere(0.4, 50, 50);
   glEndList();
 
   glNewList(Ma_Pupille, GL_COMPILE);
     glColor3f(0.0, 0.0, 0.0);
-    glScalef(0.3, 1, 1);
+    glScalef(0.3, 1.2, 1.2);
     glutSolidSphere(0.2, 50, 50);
   glEndList();
 
@@ -554,11 +554,19 @@ void Faire_Composantes() {
   glNewList(Mon_Morceau_Bambou, GL_COMPILE);
     glColor3f(0.69, 0.79, 0.38);
     gluCylinder(qobj, 0.3, 0.3, 3, 50, 1);
+    gluDisk(qobj, 0, 0.3, 50, 1);
+    glPushMatrix();
+      glTranslatef(0, 0, 3);
+      gluDisk(qobj, 0, 0.3, 50, 1);
+    glPopMatrix();
   glEndList();
 
   glNewList(Mon_Morceau_Bambou2, GL_COMPILE);
     glColor3f(0.79, 0.89, 0.48);
     gluCylinder(qobj, 0.32, 0.32, 0.14, 50, 1);
+    gluDisk(qobj, 0, 0.32, 50, 1);
+    glTranslatef(0, 0, 0.14);
+    gluDisk(qobj, 0, 0.32, 50, 1);
   glEndList();
 
   glNewList(Ma_Feuille, GL_COMPILE);
@@ -633,25 +641,25 @@ void Faire_Composantes() {
 
     // Yeux
     glPushMatrix();
-      glTranslatef(3.0, 0.0, 0.3);
+      glTranslatef(3.1, 0.0, 0.3);
       glPushMatrix();
-        glTranslatef(0.0, 1.25, 0.0);
+        glTranslatef(0.0, 1.15, 0.0);
         glRotatef(30, 1, 0, 0);
         glRotatef(22, 0, 0, 1);
         glRotatef(8, 0, 1, 0);
         glCallList(Ma_Tache);
-        glTranslatef(1, 0.0, 0.0);
+        glTranslatef(0.7, 0.0, 0.0);
         glCallList(Mon_Oeil);
         glTranslatef(0.5, 0.0, 0.0);
         glCallList(Ma_Pupille);
       glPopMatrix();
       glPushMatrix();
-        glTranslatef(0.0, -1.25, 0.0);
+        glTranslatef(0.0, -1.15, 0.0);
         glRotatef(-30, 1, 0, 0);
         glRotatef(-22, 0, 0, 1);
         glRotatef(8, 0, 1, 0);
         glCallList(Ma_Tache);
-        glTranslatef(1, 0.0, 0.0);
+        glTranslatef(0.7, 0.0, 0.0);
         glCallList(Mon_Oeil);
         glTranslatef(0.5, 0.0, 0.0);
         glCallList(Ma_Pupille);
@@ -817,7 +825,7 @@ void render_scene()
   // vertical comme sur la figure
   //glRotatef(-90, 1, 0, 0);
 
-  //glRotatef(150, 1, 1, 1);
+  //glRotatef(140, 1, 1, 1);
 
   // rotation de 160 degres autour de l'axe Oz pour faire
   // avancer l'avatar vers le spectateur
