@@ -67,7 +67,8 @@ int  Ma_Feuille;
 int  Ma_Branche;
 int  Ma_Branche_Feuille;
 int  Mon_Corps;
-int  Ma_Jambe;
+int  Ma_Cuisse;
+int  Mon_Mollet;
 
 int  Mon_Repere;
 int  Mon_Carre;
@@ -517,7 +518,8 @@ void Faire_Composantes() {
   Ma_Branche = Ma_Tete + 15;
   Ma_Branche_Feuille = Ma_Tete + 16;
   Mon_Corps = Ma_Tete + 17;
-  Ma_Jambe = Ma_Tete + 18;
+  Ma_Cuisse = Ma_Tete + 18;
+  Mon_Mollet = Ma_Tete + 19;
 
   glNewList(Ma_Tache, GL_COMPILE);
     glColor3f(0.0, 0.0, 0.0);
@@ -663,12 +665,20 @@ void Faire_Composantes() {
     glPushMatrix();
       glColor3f(0.0, 0.0, 0.0);
       glTranslatef(-4.8, 0, 1.8);
-      glScalef(0.7, 1, 1);
+      glScalef(0.7, 0.7, 1);
       glutSolidSphere(1, 50, 50);
     glPopMatrix();
   glEndList();
 
-  glNewList(Ma_Jambe, GL_COMPILE);
+  glNewList(Ma_Cuisse, GL_COMPILE);
+    glPushMatrix();
+      glColor3f(0.0, 0.0, 0.0);
+      glScalef(0.5, 0.5, 1);
+      glutSolidSphere(2.5, 50, 50);
+    glPopMatrix();
+  glEndList();
+
+  glNewList(Mon_Mollet, GL_COMPILE);
     glPushMatrix();
       glColor3f(0.0, 0.0, 0.0);
       glScalef(0.5, 0.5, 1);
@@ -886,16 +896,16 @@ void Faire_Composantes() {
   glEndList();
 
   // compilation des display lists des cylindres
-  glNewList(Mon_Tronc, GL_COMPILE);
+/*  glNewList(Mon_Tronc, GL_COMPILE);
     glColor3f(1.0, 1, 1);
     glScalef(1.75, 1, 1);
     glutSolidSphere(6, 50, 50);
   glEndList();
-/*
+
   glNewList(Mon_Bras, GL_COMPILE);
   gluCylinder(qobj, 0.5, 0.5, 5, 30, 30);
   glEndList();
-*/
+
   glNewList(Mon_AvantBras, GL_COMPILE);
   gluCylinder(qobj, 0.5, 0.25, 5, 30, 30);
   glEndList();
@@ -907,6 +917,7 @@ void Faire_Composantes() {
   glNewList(Mon_Mollet, GL_COMPILE);
   gluCylinder(qobj, 0.75, 0.25, 5, 30, 30);
   glEndList();
+  */
 }
 
 void  Dessine_Repere() {
@@ -975,20 +986,28 @@ void render_scene()
       glTranslatef(-5.5, 0, -1);
       glCallList(Mon_Corps);
       glPushMatrix();
-        glTranslatef(-2.5, 2, -3.5);
-        glCallList(Ma_Jambe);
+        glTranslatef(-2.6, 2, -2.8);
+        glCallList(Ma_Cuisse);
+        glTranslatef(0, 0, -0.6);
+        glCallList(Mon_Mollet);
       glPopMatrix();
       glPushMatrix();
-        glTranslatef(-2.5, -2, -3.5);
-        glCallList(Ma_Jambe);
+        glTranslatef(-2.6, -2, -2.8);
+        glCallList(Ma_Cuisse);
+        glTranslatef(0, 0, -0.6);
+        glCallList(Mon_Mollet);
       glPopMatrix();
       glPushMatrix();
-        glTranslatef(2.4, 2, -3.5);
-        glCallList(Ma_Jambe);
+        glTranslatef(2.4, 2, -2.8);
+        glCallList(Ma_Cuisse);
+        glTranslatef(0, 0, -0.6);
+        glCallList(Mon_Mollet);
       glPopMatrix();
       glPushMatrix();
-        glTranslatef(2.4, -2, -3.5);
-        glCallList(Ma_Jambe);
+        glTranslatef(2.4, -2, -2.8);
+        glCallList(Ma_Cuisse);
+        glTranslatef(0, 0, -0.6);
+        glCallList(Mon_Mollet);
       glPopMatrix();
     glPopMatrix();
   glPopMatrix();
