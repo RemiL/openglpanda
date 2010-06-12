@@ -1,16 +1,10 @@
 /*****************************************************************************
-File: TD3-avatar-skel.c
+MON PANDA
 
-Informatique Graphique IG1
-IFIPS
-Christian Jacquemin, Université Paris 11
 
-Copyright (C) 2007 University Paris 11 
-This file is provided without support, instruction, or implied
-warranty of any kind.  University Paris 11 makes no guarantee of its
-fitness for a particular purpose and is not liable under any
-circumstances for any damages or loss whatsoever arising from the use
-or inability to use this file or items derived from it.
+par
+
+Rémi LACROIX et Nicolas POIRIER
 ******************************************************************************/
 #include <windows.h>
 
@@ -23,8 +17,8 @@ or inability to use this file or items derived from it.
 #include <math.h>
 #include <time.h>
 
-#define    windowWidth 600
-#define    windowHeight 600
+#define windowWidth 600
+#define windowHeight 600
 
 #define RED   0
 #define GREEN 0
@@ -41,9 +35,9 @@ or inability to use this file or items derived from it.
 #define position_Ini -60.0
 
 float t = 0.f;
-float delta = 10.f;
+float delta = 50.f;
 float k = 0.001f;
-float K = 0.002f;
+float K = 0.001f;
 int IdleRunning = false;
 int TraceEcran = false;
 int RangFichierStockage = 0;
@@ -61,39 +55,47 @@ int  Mon_AvantBras;
 int  Ma_Cuisse;
 int  Mon_Mollet;
 int  Mon_Morceau_Bambou;
-int  Mon_Bambou;
+#define NB_BAMBOUS 20
+int  Mes_Bambous[NB_BAMBOUS];
 int  Mon_Morceau_Bambou2;
 int  Ma_Feuille;
 int  Ma_Branche;
 int  Ma_Branche_Feuille;
+int  Ma_Foret;
 int  Mon_Corps;
 int  Ma_Cuisse;
 int  Mon_Mollet;
 
-int  Mon_Repere;
-int  Mon_Carre;
-int  Mon_Cube;
+GLuint texture_herbe;
 
 enum lateralite{ Gauche = 0, Droit };
+
+enum etat{ArriereAvance = 0, AvantAvance = 1, Recule = 2};
+
+int etatMarche[2];
 
 float angle_Bras[2];
 float angle_AvantBras[2];
 float angle_Cuisse[2];
 float angle_Mollet[2];
+float angle_Corps;
 
-float angle_Bras_Ini[2] = {-30.0, 15.0};
-float angle_AvantBras_Ini[2] = {0.0, 15.0};
-float angle_Cuisse_Ini[2] = {20.0, -20.0};
-float angle_Mollet_Ini[2] = {0.0, -20.0};
+float angle_Bras_Ini[2] = {30.0, -30.0};
+float angle_AvantBras_Ini[2] = {-30.0, -30.0};
+float angle_Cuisse_Ini[2] = {30.0, -40.0};
+float angle_Mollet_Ini[2] = {0.0, 40.0};
+float angle_Corps_Ini[2] = {-10, 10};
 
 float amplitude_Bras;
 float amplitude_AvantBras;
 float amplitude_Cuisse;
 float amplitude_Mollet;
+float amplitude_Corps;
 float med_Bras;
 float med_AvantBras;
 float med_Cuisse;
 float med_Mollet;
+float med_Corps;
 
 static GLfloat mat_specular[] = { 1.0 , 1.0 , 1.0 , 1.0 };
 static GLfloat mat_ambientanddiffuse[] = { 0.4, 0.4 , 0.0 , 1.0 };
@@ -142,6 +144,20 @@ int camera_deplacement_active = false;
 int Step = 0;
 int latence = 4;
 
+int nb_aleatoire(int min, int max)
+{
+  int n = max - min;
+  int partSize   = 1 + (n == RAND_MAX ? 0 : (RAND_MAX - n) / (n + 1));
+  int maxUsefull = partSize * n + (partSize - 1);
+  int draw;
+  
+  do {
+      draw = rand();
+  } while (draw > maxUsefull);
+  
+  return ((draw / partSize) + min);
+}
+
 void init_scene();
 void render_scene();
 void init_angles();
@@ -155,8 +171,7 @@ GLvoid window_mouvements_souris(int x, int y);
 GLvoid window_mouvements_passifs_souris(int x, int y);
 GLvoid window_timer(); 
 void Faire_Composantes();
-void Dessine_Repere();
-void faire_cube(int cote);
+void faire_bambou(int liste, int hauteur, int nb_branches);
 void init_camera(double x, double y, double z,
                  double vect_ob_x, double vect_ob_y, double vect_ob_z,
                  double vect_vert_x, double vect_vert_y, double vect_vert_z,
@@ -168,6 +183,7 @@ void addition_vectorielle(t_coordonnees *r, double coeff_a, t_coordonnees a, dou
 double produit_scalaire(t_coordonnees a, t_coordonnees b);
 void produit_vectoriel(t_coordonnees *r, t_coordonnees a, t_coordonnees b);
 void normaliser_vecteur(t_coordonnees *v);
+GLuint LoadTextureRAW( const char * filename, int wrap );
 
 int main(int argc, char **argv) 
 {
@@ -199,7 +215,7 @@ int main(int argc, char **argv)
   // Gestion des mouvements de la souris
   glutMotionFunc(&window_mouvements_souris);
   // fonction appelée régulièrement entre deux gestions d´événements
-  //glutTimerFunc(latence,&window_timer,Step);
+  glutTimerFunc(latence,&window_timer,Step);
 
   // la boucle prinicipale de gestion des événements utilisateur
   glutMainLoop();  
@@ -229,9 +245,9 @@ GLvoid initGL()
   glEnable(GL_LIGHT1);
 
   // propriétés matérielles des objets
-  // glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, mat_ambientanddiffuse);
-  // glMaterialfv(GL_FRONT, GL_SPECULAR, mat_specular);
-  // glMaterialfv(GL_FRONT, GL_SHININESS, mat_shininess);
+   //glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, mat_ambientanddiffuse);
+   //glMaterialfv(GL_FRONT, GL_SPECULAR, mat_specular);
+   //glMaterialfv(GL_FRONT, GL_SHININESS, mat_shininess);
   glShadeModel( GL_SMOOTH );
   glEnable(GL_COLOR_MATERIAL);
 
@@ -239,18 +255,20 @@ GLvoid initGL()
   glClearColor(RED, GREEN, BLUE, ALPHA);        
   // z-buffer
   glEnable(GL_DEPTH_TEST);
+
+   texture_herbe = LoadTextureRAW("herbe.raw", 1);
 }
   
 void init_scene()
-{
-  // Dessine un cube centré sur l'origine
-  faire_cube(100);
-  
-  // initialise des display lists des composantes cylindriques du corps
+{  
+  // initialise des display lists des composantes du corps
   Faire_Composantes();
 
   // Initialisation camera
-  init_camera(30, 0, 0, -1, 0, 0, 0, 0, 1, 1);
+  init_camera(30, 0, 5, -1, 0, 0, 0, 0, 1, 1);
+
+  etatMarche[Droit] = ArriereAvance;
+  etatMarche[Gauche] = Recule;
 
   amplitude_Bras 
     = .5 * (angle_Bras_Ini[ Droit ] - angle_Bras_Ini[ Gauche ]);
@@ -260,6 +278,8 @@ void init_scene()
     = .5 * (angle_Cuisse_Ini[ Droit ] - angle_Cuisse_Ini[ Gauche ]);
   amplitude_Mollet 
     = .5 * (angle_Mollet_Ini[ Droit ] - angle_Mollet_Ini[ Gauche ]);
+  amplitude_Corps 
+    = .5 * (angle_Corps_Ini[ Droit ] - angle_Corps_Ini[ Gauche ]);
   med_Bras 
     = .5 * (angle_Bras_Ini[ Droit ] + angle_Bras_Ini[ Gauche ]);
   med_AvantBras 
@@ -268,6 +288,8 @@ void init_scene()
     = .5 * (angle_Cuisse_Ini[ Droit ] + angle_Cuisse_Ini[ Gauche ]);
   med_Mollet 
     = .5 * (angle_Mollet_Ini[ Droit ] + angle_Mollet_Ini[ Gauche ]);
+  med_Corps 
+    = .5 * (angle_Corps_Ini[ Droit ] + angle_Corps_Ini[ Gauche ]);
 }
 
 // fonction de call-back pour l´affichage dans la fenêtre
@@ -329,7 +351,7 @@ GLvoid window_key(unsigned char key, int x, int y)
         IdleRunning = false;
       } 
       else {
-        //glutTimerFunc(latence,NULL,Step);
+        glutTimerFunc(latence,NULL,Step);
         IdleRunning = true;
       }
       break; 
@@ -432,6 +454,7 @@ GLvoid window_timer()
   angle_Cuisse[ Droit ] = med_Cuisse - sin(k*t)*amplitude_Cuisse;
   angle_Mollet[ Gauche ] = med_Mollet + sin(k*t)*amplitude_Mollet;
   angle_Mollet[ Droit ] = med_Mollet - sin(k*t)*amplitude_Mollet;
+  angle_Corps = med_Corps - sin(k*t)*amplitude_Corps;
 
   t += delta;
 
@@ -444,65 +467,8 @@ GLvoid window_timer()
   glutPostRedisplay();
 }
 
-void faire_cube(int cote)
+void Faire_Composantes()
 {
-  Mon_Carre = glGenLists(2);
-  Mon_Cube = Mon_Carre + 1;
-  
-  glNewList(Mon_Carre, GL_COMPILE);
-    glBegin(GL_POLYGON);
-      glVertex3f(cote/2, -cote/2, 0);
-      glVertex3f(cote/2, cote/2, 0);
-      glVertex3f(-cote/2, cote/2, 0);
-      glVertex3f(-cote/2, -cote/2, 0);  
-    glEnd();  
-  glEndList();
-
-  glNewList(Mon_Cube, GL_COMPILE);
-    glColor3f(1, 0, 0);
-    glPushMatrix();
-      glTranslatef(0, 0, -cote/2);
-      glCallList(Mon_Carre);
-    glPopMatrix();
-
-    glColor3f(1, 1, 0);
-    glPushMatrix();
-      glTranslatef(0, 0, cote/2);
-      glCallList(Mon_Carre);
-    glPopMatrix();
-    
-    glColor3f(0, 0, 1);
-    glPushMatrix();
-      glTranslatef(-cote/2, 0, 0);
-      glRotatef(90, 0, 1, 0);
-      glCallList(Mon_Carre);
-    glPopMatrix();
-
-    glColor3f(0, 1, 1);
-    glPushMatrix();
-      glTranslatef(cote/2, 0, 0);
-      glRotatef(90, 0, 1, 0);
-      glCallList(Mon_Carre);
-    glPopMatrix();
-    
-    glColor3f(0.5, 0.5, 0.5);
-    glPushMatrix();
-      glTranslatef(0, -cote/2, 0);
-      glRotatef(-90, 1, 0, 0);
-      glCallList(Mon_Carre);
-    glPopMatrix();
-
-    glColor3f(1, 0, 1);
-    glPushMatrix();
-      glTranslatef(0, cote/2, 0);
-      glRotatef(-90, 1, 0, 0);
-      glCallList(Mon_Carre);
-    glPopMatrix();
-  glEndList();
-}
-
-// un cylindre
-void Faire_Composantes() {
   int i;
   GLUquadricObj* qobj; /*GLAPIENTRY*/
 
@@ -514,7 +480,7 @@ void Faire_Composantes() {
   gluQuadricNormals(qobj, GLU_SMOOTH);
 
   // attribution des indentificateurs de display lists
-  Ma_Tete =  glGenLists(17);
+  Ma_Tete =  glGenLists(19+NB_BAMBOUS);
   Ma_Tache = Ma_Tete + 1;
   Mon_Oeil = Ma_Tete + 2;
   Ma_Pupille = Ma_Tete + 3;
@@ -526,14 +492,16 @@ void Faire_Composantes() {
   Ma_Cuisse = Ma_Tete + 9;
   Mon_Mollet = Ma_Tete + 10;
   Mon_Morceau_Bambou = Ma_Tete + 11;
-  Mon_Bambou = Ma_Tete + 12;
-  Mon_Morceau_Bambou2 = Ma_Tete + 13;
-  Ma_Feuille = Ma_Tete + 14;
-  Ma_Branche = Ma_Tete + 15;
-  Ma_Branche_Feuille = Ma_Tete + 16;
-  Mon_Corps = Ma_Tete + 17;
-  Ma_Cuisse = Ma_Tete + 18;
-  Mon_Mollet = Ma_Tete + 19;
+  Mon_Morceau_Bambou2 = Ma_Tete + 12;
+  Ma_Feuille = Ma_Tete + 13;
+  Ma_Branche = Ma_Tete + 14;
+  Ma_Branche_Feuille = Ma_Tete + 15;
+  Mon_Corps = Ma_Tete + 16;
+  Ma_Cuisse = Ma_Tete + 17;
+  Mon_Mollet = Ma_Tete + 18;
+  for (i=0; i<NB_BAMBOUS; i++)
+    Mes_Bambous[i] = Mon_Mollet + i + 1;
+  Ma_Foret = Mes_Bambous[NB_BAMBOUS-1] + 1;
 
   glNewList(Ma_Tache, GL_COMPILE);
     glColor3f(0.0, 0.0, 0.0);
@@ -686,7 +654,7 @@ void Faire_Composantes() {
 
   glNewList(Ma_Cuisse, GL_COMPILE);
     glPushMatrix();
-      glColor3f(0.0, 0.0, 0.0);
+      //glColor3f(0.0, 0.0, 0.0);
       glScalef(0.5, 0.5, 1);
       glutSolidSphere(2.5, 50, 50);
     glPopMatrix();
@@ -754,13 +722,32 @@ void Faire_Composantes() {
       glCallList(Mon_Nez);
     glPopMatrix();
   glEndList();
+  
+  for (i=0; i<NB_BAMBOUS; i++)
+    faire_bambou(Mes_Bambous[i], nb_aleatoire(7,12), nb_aleatoire(7,12)*1.7);
 
+  glNewList(Ma_Foret, GL_COMPILE);
+    for (i=0; i<3*NB_BAMBOUS; i++)
+    {
+      glPushMatrix();
+        glTranslatef((i/10)*17+nb_aleatoire(-2,10), (i%10)*17+nb_aleatoire(-2,10), 0);
+        glCallList(Mes_Bambous[nb_aleatoire(0,NB_BAMBOUS-1)]);
+      glPopMatrix();
+    }
+  glEndList();
+}
+
+void faire_bambou(int liste, int hauteur, int nb_branches)
+{
+  int i;
+  
   //Bambou
-  glNewList(Mon_Bambou, GL_COMPILE);
+  glNewList(liste, GL_COMPILE);
+  glPushMatrix();
     glPushMatrix();
-      glTranslatef(4.0, 4.0, -5.0);
+      glTranslatef(0.0, 0.0, -5.0);
       glCallList(Mon_Morceau_Bambou);
-      for(i=0; i<10; i++)
+      for(i=0; i<hauteur; i++)
       {
         glTranslatef(0.0, 0.0, 3.0);
         glCallList(Mon_Morceau_Bambou2);
@@ -768,16 +755,19 @@ void Faire_Composantes() {
       }
       glTranslatef(0.0, 0.0, 3.0);
       glCallList(Mon_Morceau_Bambou2);
+    glPopMatrix();
+
+    glTranslatef(0.0, 0.0, 3.0);
+    for(i=0; i<nb_branches; i++)
+    {
+      glTranslatef(0.0, 0.0, 3.0*hauteur/nb_branches);
 
       glPushMatrix();
-        glTranslatef(0, 0, -1);
-        glRotatef(20, 0, 1, 0);
-        glCallList(Ma_Branche_Feuille);
-      glPopMatrix();
-      glPushMatrix();
+        glRotatef(120*(i%3 + rand()%11/10.0), 0, 0, 1);
         glTranslatef(0, 0, -9);
         glRotatef(10, 1, 0, 0);
         glCallList(Ma_Branche);
+        
         glPushMatrix();
           glTranslatef(0, 0, 5);
           glRotatef(10, 1, 0, 0);
@@ -790,322 +780,111 @@ void Faire_Composantes() {
           glRotatef(90, 0, 0, 1);
           glCallList(Ma_Branche_Feuille);
         glPopMatrix();
+        
       glPopMatrix();
-
-      glPushMatrix();
-        glTranslatef(0, 0, -15);
-        glRotatef(10, 0, 1, 0);
-        glCallList(Ma_Branche);
-        glPushMatrix();
-          glTranslatef(0, 0, 5);
-          glRotatef(-20, 1, 0, 0);
-          glRotatef(10, 0, 1, 0);
-          glRotatef(10, 0, 0, 1);
-          glCallList(Ma_Branche_Feuille);
-        glPopMatrix();
-      glPopMatrix();
-
-      glPushMatrix();
-        glTranslatef(0, 0, -20);
-        glRotatef(-20, 0, 1, 0);
-        glCallList(Ma_Branche);
-        glPushMatrix();
-          glTranslatef(0, 0, 5);
-          glRotatef(-20, 1, 0, 0);
-          glRotatef(10, 0, 1, 0);
-          glRotatef(10, 0, 0, 1);
-          glCallList(Ma_Branche_Feuille);
-        glPopMatrix();
-      glPopMatrix();
-
-      glPushMatrix();
-        glTranslatef(0, 0, -30);
-        glRotatef(40, 0, 0, 1);
-        glRotatef(-15, 1, 0, 0);
-        glCallList(Ma_Branche);
-        glTranslatef(0, 0, 5);
-        glRotatef(-5, 1, 0, 0);
-        glCallList(Ma_Branche);
-        glPushMatrix();
-          glTranslatef(0, 0, 5);
-          glRotatef(-20, 1, 0, 0);
-          glRotatef(10, 0, 1, 0);
-          glRotatef(10, 0, 0, 1);
-          glCallList(Ma_Branche_Feuille);
-        glPopMatrix();
-        glPushMatrix();
-          glRotatef(20, 1, 0, 0);
-          glRotatef(-10, 0, 1, 0);
-          glRotatef(10, 0, 0, 1);
-          glCallList(Ma_Branche_Feuille);
-        glPopMatrix();
-      glPopMatrix();
-      /*for(i=0; i<200; i++)
-      {
-        float trans;
-        int angle;
-        int angle2;
-        int angle3;
-        int angle4;
-        int angle5;
-        do
-        {
-          trans = -5*(rand()%50 + 5) / (float)(rand()%50 + 5);
-        }while(trans < -10);
-
-        angle = rand();
-        angle2 = (rand() % 100) + 80;
-        if(rand() % 2)
-          angle3 = (rand() % 50) + 20;
-        else
-          angle3 = -(rand() % 50) + 20;
-        angle4 = -(rand() % 50) + 20;
-        angle5 = -(rand() % 15);
-
-        glPushMatrix();
-          glScalef(0.5, 0.5, 0.5);
-          glTranslatef(0, 0, trans);
-          glRotatef(angle, 0, 0, 1);
-          glRotatef(angle2, 0, 1, 0);
-          glRotatef(angle3, 0, 0, 1);
-          glRotatef(angle4, 0, 1, 0);
-          if(rand() % 2)
-          {
-            glCallList(Ma_Branche);
-            glTranslatef(0, 0, 5);
-          }
-          glRotatef(angle5, 0, 1, 0);
-          glCallList(Ma_Branche_Feuille);
-        glPopMatrix();
-      }*/
-      /*glPushMatrix();
-        glScalef(0.8, 0.8, 0.8);
-        glRotatef(90, 0, 0, 1);
-        glRotatef(90, 0, 1, 0);
-        glRotatef(30, 0, 0, 1);
-        glRotatef(30, 0, 1, 0);
-        glCallList(Ma_Branche);
-      glPopMatrix();
-      glPushMatrix();
-        glScalef(0.8, 0.8, 0.8);
-        glRotatef(90, 0, 0, 1);
-        glRotatef(-90, 0, 1, 0);
-        glRotatef(30, 0, 0, 1);
-        glRotatef(30, 0, 1, 0);
-        glCallList(Ma_Branche);
-        glTranslatef(0, 0, 5);
-        glRotatef(-10, 0, 1, 0);
-        glCallList(Ma_Branche_Feuille);
-      glPopMatrix();
-      glPushMatrix();
-        glTranslatef(0, 0, -1);
-        glScalef(0.8, 0.8, 0.8);
-        glRotatef(70, 0, 0, 1);
-        glRotatef(-70, 0, 1, 0);
-        glRotatef(30, 0, 0, 1);
-        glRotatef(-40, 0, 1, 0);
-        glCallList(Ma_Branche);
-      glPopMatrix();*/
-    glPopMatrix();
+    }
+  glPopMatrix();
   glEndList();
-
-  // compilation des display lists des cylindres
-/*  glNewList(Mon_Tronc, GL_COMPILE);
-    glColor3f(1.0, 1, 1);
-    glScalef(1.75, 1, 1);
-    glutSolidSphere(6, 50, 50);
-  glEndList();
-
-  glNewList(Mon_Bras, GL_COMPILE);
-  gluCylinder(qobj, 0.5, 0.5, 5, 30, 30);
-  glEndList();
-
-  glNewList(Mon_AvantBras, GL_COMPILE);
-  gluCylinder(qobj, 0.5, 0.25, 5, 30, 30);
-  glEndList();
-
-  glNewList(Ma_Cuisse, GL_COMPILE);
-  gluCylinder(qobj, 1.25, 0.75, 5, 30, 30);
-  glEndList();
-
-  glNewList(Mon_Mollet, GL_COMPILE);
-  gluCylinder(qobj, 0.75, 0.25, 5, 30, 30);
-  glEndList();
-  */
 }
 
-void  Dessine_Repere() {
-  glNewList(Mon_Repere, GL_COMPILE);
-    glBegin(GL_LINES);
-      glColor3f(1.0, 0.0, 0.0);
-      glVertex3f(-10 , 0 , 0);
-      glVertex3f(10 , 0 , 0);
+void dessiner_decor()
+{
+  int taille = 500;
+
+  glPushMatrix();
+    glEnable(GL_TEXTURE_2D);
+    glBindTexture(GL_TEXTURE_2D, texture_herbe);
+    glBegin(GL_QUADS);
+      glColor3f(1, 1, 1);
+      glTexCoord2i(0, 0);
+      glVertex2i(-taille, -taille);
+      glTexCoord2i(taille/20, 0);
+      glVertex2i(taille, -taille);
+      glTexCoord2i(taille/20, taille/20);
+      glVertex2i(taille, taille);
+      glTexCoord2i(0, taille/20);
+      glVertex2i(-taille, taille);
     glEnd();
-    glBegin(GL_LINES);
-      glColor3f(0.0, 1.0, 0.0);
-      glVertex3f(0 , -10 , 0);
-      glVertex3f(0 , 10 , 0);
-    glEnd();
-    glPointSize( 10.0 );
-    glBegin(GL_POINTS);
-      glColor3f(1.0, 1.0, 1.0);
-      glVertex3f(10.0 , 0 , 0);
-    glEnd();
-    glBegin(GL_POINTS);
-      glColor3f(1.0, 1.0, 1.0);
-      glVertex3f(0 , 10.0 , 0);
-    glEnd();
-  glEndList();
+    glDisable(GL_TEXTURE_2D);
+  glPopMatrix();
+
+  glPushMatrix();
+    glTranslatef(0, 0, 5);
+    glCallList(Ma_Foret);
+  glPopMatrix();
 }
 
 void render_scene()
 {
-  // rotation de 90 degres autour de Ox pour mettre l'axe Oz 
-  // vertical comme sur la figure
-  //glRotatef(-90, 1, 0, 0);
-
-  //glRotatef(140, 1, 1, 1);
-
-  // rotation de 160 degres autour de l'axe Oz pour faire
-  // avancer l'avatar vers le spectateur
-  //glRotatef(-180, 0, 0, 1);
-
-  // rotation de 25 degres autour de la bissectrice de $Oy$ pour
-  // voir la figure en perspective
-  // glRotatef(25, 0, 1, 0);
-
-  // déplacement horizontal selon l´axe Oy pour donner 
-  // une impression de déplacement horizontal accompagnant
-  // la marche
-  // glTranslatef( 0, position, 0);
-  
-  // Tracé d'un cube pour délimiter l'espace
   glPushMatrix();
-    glCallList(Mon_Cube);
-  glPopMatrix();
-
-  // tracé du tronc, aucune transformation n´est
-  // requise
-  glPushMatrix();
-    //glCallList(Mon_Tronc);
-  glPopMatrix();
-  // tracé de la tête avec une translation positive
-  // selon Oz pour la placer au-dessus du tronc
-  // les appels à glPushMatrix et glPopMatrix servent 
-  // à sauvegarder et restaurer le contexte graphique
-  glPushMatrix();
-    glTranslatef(11.0, 0.0, 3.0);
-    glCallList(Ma_Tete);
+    // déplacement horizontal selon l´axe Ox pour donner 
+    // une impression de déplacement horizontal accompagnant
+    // la marche
+    glTranslatef(position, 0, 3.7);
+    glScalef(0.5, 0.5, 0.5);
+    glPushMatrix();
+      glRotatef(-angle_Corps/4, 1, 0, 0);
+      glCallList(Ma_Tete);
+    glPopMatrix();
     glPushMatrix();
       glTranslatef(-5.5, 0, -1);
-      glCallList(Mon_Corps);
+      glPushMatrix();
+        glRotatef(angle_Corps, 1, 0, 0);
+        glCallList(Mon_Corps);
+      glPopMatrix();
       glPushMatrix();
         glTranslatef(-2.6, 2, -2.8);
+        glTranslatef(0, 0, 1);
+        glRotatef(angle_Cuisse[Gauche], 0, 1, 0);
+        glTranslatef(0, 0, -1);
         glCallList(Ma_Cuisse);
-        glTranslatef(0, 0, -0.6);
+        glTranslatef(0, 0, -1.2);
+        glTranslatef(0, 0, 1);
+        glRotatef(angle_Mollet[Gauche],0,1,0);
+        glTranslatef(0, 0, -1);
         glCallList(Mon_Mollet);
       glPopMatrix();
       glPushMatrix();
         glTranslatef(-2.6, -2, -2.8);
+        glTranslatef(0, 0, 1);
+        glRotatef(angle_Cuisse[Droit], 0, 1, 0);
+        glTranslatef(0, 0, -1);
         glCallList(Ma_Cuisse);
-        glTranslatef(0, 0, -0.6);
+        glTranslatef(0, 0, -1.2);
+        glTranslatef(0, 0, 1);
+        glRotatef(angle_Mollet[Droit],0,1,0);
+        glTranslatef(0, 0, -1);
         glCallList(Mon_Mollet);
       glPopMatrix();
       glPushMatrix();
         glTranslatef(2.4, 2, -2.8);
+        glTranslatef(0, 0, 1);
+        glRotatef(angle_Bras[Gauche], 0, 1, 0);
+        glTranslatef(0, 0, -1);
         glCallList(Ma_Cuisse);
-        glTranslatef(0, 0, -0.6);
+        glTranslatef(0, 0, -1.2);
+        glTranslatef(0, 0, 1);
+        glRotatef(angle_AvantBras[Gauche],0,1,0);
+        glTranslatef(0, 0, -1);
         glCallList(Mon_Mollet);
       glPopMatrix();
       glPushMatrix();
         glTranslatef(2.4, -2, -2.8);
+        glTranslatef(0, 0, 1);
+        glRotatef(angle_Bras[Droit], 0, 1, 0);
+        glTranslatef(0, 0, -1);
         glCallList(Ma_Cuisse);
-        glTranslatef(0, 0, -0.6);
+        glTranslatef(0, 0, -1.2);
+        glTranslatef(0, 0, 1);
+        glRotatef(angle_AvantBras[Droit],0,1,0);
+        glTranslatef(0, 0, -1);
         glCallList(Mon_Mollet);
       glPopMatrix();
     glPopMatrix();
   glPopMatrix();
 
-  glCallList(Mon_Bambou);
+  dessiner_decor();
 
-/*
-  // tracé de la cuisse droite avec une translation vers
-  // la droite et une rotation de 180° autour de Ox
-  // pour l´orienter vers le bas
-  glPushMatrix();
-  glColor3f(0.0, 1.0, 1.0); // cyan
-  glTranslatef(1.25, 0.0, 0.0);
-  glRotatef(180, 1.0, 0, 0);
-  glRotatef(angle_Cuisse[ Droit ], 1.0, 0.0, 0.0);
-  glCallList(Ma_Cuisse);
-
-  // pour tracer le mollet, on reste dans le même
-  // contexte graphique et on translate de
-  // +5 selon Oz afin de mettre le repère au niveau
-  // du genou
-  glPushMatrix();
-    glTranslatef(0.0, 0.0, 5.0);
-    glRotatef(angle_Mollet[ Droit ], 1.0, 0.0, 0.0);
-    glCallList(Mon_Mollet);
-  glPopMatrix();
-  glPopMatrix();
-
-  // cuisse et mollet gauches
-  // seule la translation initiale change
-  glPushMatrix();
-    glColor3f(0.0, 0.0, 1.0); // bleu
-    glTranslatef(-1.25, 0.0, 0.0);
-    glRotatef(180, 1.0, 0, 0);
-    glRotatef(angle_Cuisse[ Gauche ], 1.0, 0.0, 0.0);
-    glCallList(Ma_Cuisse);
-
-    glPushMatrix();
-      glTranslatef(0.0, 0.0, 5.0);
-      glRotatef(angle_Mollet[ Gauche ], 1.0, 0.0, 0.0);
-      glCallList(Mon_Mollet);
-    glPopMatrix();
-  glPopMatrix();
-
-  // tracé du bras droit avec une translation vers
-  // la droite et vers le haut composée avec une 
-  // rotation de 180° autour de Ox pour l´orienter
-  // vers le bas
-  glPushMatrix();
-  glColor3f(1.0, 0.0, 0.0);
-  glTranslatef(3.0, 0.0, 0.0);
-  glTranslatef(0.0, 0.0, 7.0);
-  glRotatef(180, 1.0, 0, 0);
-  glRotatef(angle_Bras[ Droit ], 1.0, 0, 0);
-  glCallList(Mon_Bras);
-
-  // pour tracer l´avant-bras, on reste dans le même
-  // contexte graphique et on translate de
-  // +5 selon Oz afin de mettre le repère au niveau
-  // du coude
-  glPushMatrix();
-    glTranslatef(0.0, 0.0, 5.0);
-    glRotatef(angle_AvantBras[ Droit ], 1.0, 0, 0);
-    glCallList(Mon_AvantBras);
-  glPopMatrix();
-  glPopMatrix();
-
-  // bras et avant-bras gauches
-  // seule la translation initiale change
-  glPushMatrix();
-  glColor3f(1.0, 0.0, 1.0); // violet
-  glTranslatef(-3.0, 0.0, 0.0);
-  glTranslatef(0.0, 0.0, 7.0);
-  glRotatef(180, 1.0, 0, 0);
-  glRotatef(angle_Bras[ Gauche ], 1.0, 0, 0);
-  glCallList(Mon_Bras);
-
-  glPushMatrix();
-    glTranslatef(0.0, 0.0, 5.0);
-    glRotatef(angle_AvantBras[ Gauche ], 1.0, 0, 0);
-    glCallList(Mon_AvantBras);
-  glPopMatrix();
-  glPopMatrix();
-*/
   // permutation des buffers lorsque le tracé est achevé
   glutSwapBuffers();
 }
@@ -1223,4 +1002,57 @@ void normaliser_vecteur(t_coordonnees *v)
   v->x /= norme;
   v->y /= norme;
   v->z /= norme;
+}
+
+// load a 256x256 RGB .RAW file as a texture
+GLuint LoadTextureRAW( const char * filename, int wrap )
+{
+    GLuint texture;
+    int width, height;
+    char * data;
+    FILE * file;
+
+    // open texture data
+    file = fopen( filename, "rb" );
+    if ( file == NULL ) return 0;
+
+    // allocate buffer
+    width = 256;
+    height = 256;
+    data = (char *) malloc( width * height * 3 );
+
+    // read texture data
+    fread( data, width * height * 3, 1, file );
+    fclose( file );
+
+    // allocate a texture name
+    glGenTextures( 1, &texture );
+
+    // select our current texture
+    glBindTexture( GL_TEXTURE_2D, texture );
+
+    // select modulate to mix texture with color for shading
+    glTexEnvf( GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE );
+
+    // when texture area is small, bilinear filter the closest mipmap
+    glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
+                     GL_LINEAR_MIPMAP_NEAREST );
+    // when texture area is large, bilinear filter the first mipmap
+    glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
+
+    // if wrap is true, the texture wraps over at the edges (repeat)
+    //       ... false, the texture ends at the edges (clamp)
+    glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S,
+                     wrap ? GL_REPEAT : GL_CLAMP );
+    glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T,
+                     wrap ? GL_REPEAT : GL_CLAMP );
+
+    // build our texture mipmaps
+    gluBuild2DMipmaps( GL_TEXTURE_2D, 3, width, height,
+                       GL_RGB, GL_UNSIGNED_BYTE, data );
+
+    // free buffer
+    free( data );
+
+    return texture;
 }
