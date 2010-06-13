@@ -33,8 +33,10 @@ Rémi LACROIX et Nicolas POIRIER
 #define PI 3.1415926535898
 
 #define position_Ini -60.0
+#define positionCote_Ini 0.0
 
 float t = 0.f;
+float tCote = 0.f;
 float delta = 50.f;
 float k = 0.001f;
 float K = 0.001f;
@@ -42,6 +44,7 @@ int IdleRunning = false;
 int TraceEcran = false;
 int RangFichierStockage = 0;
 float position = position_Ini;
+float positionCote = positionCote_Ini;
 
 int  Ma_Tete;
 int  Ma_Tache;
@@ -70,32 +73,42 @@ GLuint texture_herbe;
 
 enum lateralite{ Gauche = 0, Droit };
 
-enum etat{ArriereAvance = 0, AvantAvance = 1, Recule = 2};
+enum allures{Arret = 0, Pas = 1, Trot = 2, Galop = 3};
+enum modes{Spectateur = 0, Panda = 1};
 
-int etatMarche[2];
+int allure = Arret;
+int mode = Spectateur;
+
+// Variables pour la marche
+enum etats{ArriereAvance = 0, AvantAvance = 1, Recule = 2};
+int etatMarche[2] = {Recule, AvantAvance};
 
 float angle_Bras[2];
 float angle_AvantBras[2];
 float angle_Cuisse[2];
 float angle_Mollet[2];
 float angle_Corps;
+float angle_Tete;
 
-float angle_Bras_Ini[2] = {30.0, -30.0};
+float angle_Bras_Ini[2] = {30.0, -10.0};
 float angle_AvantBras_Ini[2] = {-30.0, -30.0};
 float angle_Cuisse_Ini[2] = {30.0, -40.0};
 float angle_Mollet_Ini[2] = {0.0, 40.0};
 float angle_Corps_Ini[2] = {-10, 10};
+float angle_Tete_Ini[2] = {3, -3};
 
 float amplitude_Bras;
 float amplitude_AvantBras;
 float amplitude_Cuisse;
 float amplitude_Mollet;
 float amplitude_Corps;
+float amplitude_Tete;
 float med_Bras;
 float med_AvantBras;
 float med_Cuisse;
 float med_Mollet;
 float med_Corps;
+float med_Tete;
 
 static GLfloat mat_specular[] = { 1.0 , 1.0 , 1.0 , 1.0 };
 static GLfloat mat_ambientanddiffuse[] = { 0.4, 0.4 , 0.0 , 1.0 };
@@ -256,7 +269,7 @@ GLvoid initGL()
   // z-buffer
   glEnable(GL_DEPTH_TEST);
 
-   texture_herbe = LoadTextureRAW("herbe.raw", 1);
+  texture_herbe = LoadTextureRAW("herbe.raw", 1);
 }
   
 void init_scene()
@@ -280,6 +293,8 @@ void init_scene()
     = .5 * (angle_Mollet_Ini[ Droit ] - angle_Mollet_Ini[ Gauche ]);
   amplitude_Corps 
     = .5 * (angle_Corps_Ini[ Droit ] - angle_Corps_Ini[ Gauche ]);
+  amplitude_Tete 
+    = .5 * (angle_Tete_Ini[ Droit ] - angle_Tete_Ini[ Gauche ]);
   med_Bras 
     = .5 * (angle_Bras_Ini[ Droit ] + angle_Bras_Ini[ Gauche ]);
   med_AvantBras 
@@ -290,6 +305,8 @@ void init_scene()
     = .5 * (angle_Mollet_Ini[ Droit ] + angle_Mollet_Ini[ Gauche ]);
   med_Corps 
     = .5 * (angle_Corps_Ini[ Droit ] + angle_Corps_Ini[ Gauche ]);
+  med_Tete
+    = .5 * (angle_Tete_Ini[ Droit ] + angle_Tete_Ini[ Gauche ]);
 }
 
 // fonction de call-back pour l´affichage dans la fenêtre
@@ -345,21 +362,32 @@ GLvoid window_key(unsigned char key, int x, int y)
     case KEY_ESC:  
       exit(1);                    
       break; 
-    case ' ':
-      if (IdleRunning) {
-        glutTimerFunc(latence,&window_timer,Step);
-        IdleRunning = false;
-      } 
-      else {
-        glutTimerFunc(latence,NULL,Step);
-        IdleRunning = true;
+    // Augmentation de l'allure
+    case '+':
+      if(allure < Galop)
+      {
+        allure++;
       }
       break; 
-    case '+':  
-      delta *= 1.01;
-      break; 
-    case '-':  
-      delta /= 1.01;
+    // Diminution de l'allure
+    case '-':
+      printf("%d\n", allure);
+      if(allure > Pas || (allure == Pas && mode == Spectateur))
+      {
+        allure--;
+      }
+      break;
+    // Changement du mode de jeu
+    case '0':
+      if(mode == Spectateur)
+      {
+        mode = Panda;
+        // Mettre la camera sur la tete du panda !!!!!!!!!!!!!!!
+      }
+      else
+      {
+        mode = Spectateur;
+      }
       break;
     // Gestion mode caméra
     case 'f':
@@ -375,32 +403,85 @@ GLvoid window_key(unsigned char key, int x, int y)
 // Gestion des touches spéciales
 GLvoid window_special_key(int key, int x, int y)
 {
-  switch(key)
+  if(mode == Spectateur)
   {
-    // Gestion mouvements caméra
-    case GLUT_KEY_UP:
-      printf("GLUT_KEY_UP\n");
-      addition_vectorielle(&camera.position, 1, camera.position, camera.pas, camera.vecteur_observation);
-      glutPostRedisplay();
-      break;
-    case GLUT_KEY_DOWN:
-      printf("GLUT_KEY_DOWN\n");
-      addition_vectorielle(&camera.position, 1, camera.position, -camera.pas, camera.vecteur_observation);
-      glutPostRedisplay();
-      break;
-    case GLUT_KEY_RIGHT:
-      printf("GLUT_KEY_LEFT\n");
-      addition_vectorielle(&camera.position, 1, camera.position, camera.pas, camera.vecteur_normal);
-      glutPostRedisplay();
-      break;
-    case GLUT_KEY_LEFT:
-      printf("GLUT_KEY_RIGHT\n");
-      addition_vectorielle(&camera.position, 1, camera.position, -camera.pas, camera.vecteur_normal);
-      glutPostRedisplay();
-      break;
-    default:
-      printf ("La touche %d n´est pas active.\n", key);
-      break;
+    switch(key)
+    {
+      // Gestion mouvements caméra
+      case GLUT_KEY_UP:
+        printf("GLUT_KEY_UP\n");
+        addition_vectorielle(&camera.position, 1, camera.position, camera.pas, camera.vecteur_observation);
+        glutPostRedisplay();
+        break;
+      case GLUT_KEY_DOWN:
+        printf("GLUT_KEY_DOWN\n");
+        addition_vectorielle(&camera.position, 1, camera.position, -camera.pas, camera.vecteur_observation);
+        glutPostRedisplay();
+        break;
+      case GLUT_KEY_RIGHT:
+        printf("GLUT_KEY_LEFT\n");
+        addition_vectorielle(&camera.position, 1, camera.position, camera.pas, camera.vecteur_normal);
+        glutPostRedisplay();
+        break;
+      case GLUT_KEY_LEFT:
+        printf("GLUT_KEY_RIGHT\n");
+        addition_vectorielle(&camera.position, 1, camera.position, -camera.pas, camera.vecteur_normal);
+        glutPostRedisplay();
+        break;
+      default:
+        printf ("La touche %d n´est pas active.\n", key);
+        break;
+    }
+  }
+  else
+  {
+    switch(key)
+    {
+      // Gestion mouvements caméra
+      case GLUT_KEY_UP:
+        printf("GLUT_KEY_UP\n");
+        addition_vectorielle(&camera.position, 1, camera.position, camera.pas, camera.vecteur_observation);
+        if(allure < Pas)
+        {
+           allure++;
+        }
+        t += delta;
+        glutPostRedisplay();
+        break;
+      case GLUT_KEY_DOWN:
+        printf("GLUT_KEY_DOWN\n");
+        addition_vectorielle(&camera.position, 1, camera.position, -camera.pas, camera.vecteur_observation);
+        if(allure < Pas)
+        {
+           allure++;
+        }
+        t -= delta;
+        glutPostRedisplay();
+        break;
+      case GLUT_KEY_RIGHT:
+        printf("GLUT_KEY_LEFT\n");
+        addition_vectorielle(&camera.position, 1, camera.position, camera.pas, camera.vecteur_normal);
+        if(allure < Pas)
+        {
+           allure++;
+        }
+        tCote -= delta;
+        glutPostRedisplay();
+        break;
+      case GLUT_KEY_LEFT:
+        printf("GLUT_KEY_RIGHT\n");
+        addition_vectorielle(&camera.position, 1, camera.position, -camera.pas, camera.vecteur_normal);
+        if(allure < Pas)
+        {
+           allure++;
+        }
+        tCote += delta;
+        glutPostRedisplay();
+        break;
+      default:
+        printf ("La touche %d n´est pas active.\n", key);
+        break;
+    }
   }
 }
 
@@ -446,23 +527,72 @@ GLvoid window_timer()
 {
   // On effecture une variation des angles de chaque membre
   // de l'amplitude associée et de la position médiane
-  angle_Bras[ Gauche ] = med_Bras + sin(k*t)*amplitude_Bras;
-  angle_Bras[ Droit ] = med_Bras - sin(k*t)*amplitude_Bras;
-  angle_AvantBras[ Gauche ] = med_AvantBras + sin(k*t)*amplitude_AvantBras;
-  angle_AvantBras[ Droit ] = med_AvantBras - sin(k*t)*amplitude_AvantBras;
-  angle_Cuisse[ Gauche ] = med_Cuisse + sin(k*t)*amplitude_Cuisse;
-  angle_Cuisse[ Droit ] = med_Cuisse - sin(k*t)*amplitude_Cuisse;
-  angle_Mollet[ Gauche ] = med_Mollet + sin(k*t)*amplitude_Mollet;
-  angle_Mollet[ Droit ] = med_Mollet - sin(k*t)*amplitude_Mollet;
-  angle_Corps = med_Corps - sin(k*t)*amplitude_Corps;
 
-  t += delta;
+  // Si on est au pas
+  if(allure == Pas)
+  {
+    angle_Bras[ Gauche ] = med_Bras + sin(k*t)*amplitude_Bras;
+    angle_AvantBras[ Gauche ] = med_AvantBras + sin(k*t)*amplitude_AvantBras;
+    angle_Cuisse[ Gauche ] = med_Cuisse + sin(k*t)*amplitude_Cuisse;
+    angle_Mollet[ Gauche ] = med_Mollet + sin(k*t)*amplitude_Mollet;
+
+    angle_Bras[ Droit ] = med_Bras - sin(k*t)*amplitude_Bras;
+    angle_AvantBras[ Droit ] = med_AvantBras - sin(k*t)*amplitude_AvantBras;
+    angle_Cuisse[ Droit ] = med_Cuisse - sin(k*t)*amplitude_Cuisse;
+    angle_Mollet[ Droit ] = med_Mollet - sin(k*t)*amplitude_Mollet;
+
+    angle_Corps = med_Corps - sin(k*t)*amplitude_Corps;
+    angle_Tete = med_Tete - sin(k*t)*amplitude_Tete;
+  }
+  // Si on est au trot
+  else if(allure == Trot)
+  {
+    angle_Bras[ Gauche ] = med_Bras + sin(k*t)*amplitude_Bras;
+    angle_AvantBras[ Gauche ] = med_AvantBras + sin(k*t)*amplitude_AvantBras;
+    angle_Cuisse[ Gauche ] = med_Cuisse + sin(k*t)*amplitude_Cuisse;
+    angle_Mollet[ Gauche ] = med_Mollet + sin(k*t)*amplitude_Mollet;
+
+    angle_Bras[ Droit ] = med_Bras - sin(k*t)*amplitude_Bras;
+    angle_AvantBras[ Droit ] = med_AvantBras - sin(k*t)*amplitude_AvantBras;
+    angle_Cuisse[ Droit ] = med_Cuisse - sin(k*t)*amplitude_Cuisse;
+    angle_Mollet[ Droit ] = med_Mollet - sin(k*t)*amplitude_Mollet;
+
+    angle_Corps = med_Corps - sin(k*t)*amplitude_Corps;
+    angle_Tete = med_Tete - sin(k*t)*amplitude_Tete;
+  }
+  // Si on est au galop
+  else if(allure == Galop)
+  {
+    angle_Bras[ Gauche ] = med_Bras + sin(k*t)*amplitude_Bras;
+    angle_AvantBras[ Gauche ] = med_AvantBras + sin(k*t)*amplitude_AvantBras;
+    angle_Cuisse[ Gauche ] = med_Cuisse + sin(k*t)*amplitude_Cuisse;
+    angle_Mollet[ Gauche ] = med_Mollet + sin(k*t)*amplitude_Mollet;
+
+    angle_Bras[ Droit ] = med_Bras - sin(k*t)*amplitude_Bras;
+    angle_AvantBras[ Droit ] = med_AvantBras - sin(k*t)*amplitude_AvantBras;
+    angle_Cuisse[ Droit ] = med_Cuisse - sin(k*t)*amplitude_Cuisse;
+    angle_Mollet[ Droit ] = med_Mollet - sin(k*t)*amplitude_Mollet;
+
+    angle_Corps = med_Corps - sin(k*t)*amplitude_Corps;
+    angle_Tete = med_Tete - sin(k*t)*amplitude_Tete;
+  }
+  // Si on est à l'arrêt
+  else
+  {
+
+  }
 
   // On déplace la position de l'avatar pour qu'il avance
   position = position_Ini + K*t;
+  positionCote = positionCote_Ini + K*tCote;
   
   if (!IdleRunning)
     glutTimerFunc(latence,&window_timer,++Step);
+
+  if(mode == Spectateur && allure > Arret)
+  {
+    t += delta;
+  }
 
   glutPostRedisplay();
 }
@@ -654,7 +784,7 @@ void Faire_Composantes()
 
   glNewList(Ma_Cuisse, GL_COMPILE);
     glPushMatrix();
-      //glColor3f(0.0, 0.0, 0.0);
+      glColor3f(0.0, 0.0, 0.0);
       glScalef(0.5, 0.5, 1);
       glutSolidSphere(2.5, 50, 50);
     glPopMatrix();
@@ -820,10 +950,10 @@ void render_scene()
     // déplacement horizontal selon l´axe Ox pour donner 
     // une impression de déplacement horizontal accompagnant
     // la marche
-    glTranslatef(position, 0, 3.7);
+    glTranslatef(position, positionCote, 3.7);
     glScalef(0.5, 0.5, 0.5);
     glPushMatrix();
-      glRotatef(-angle_Corps/4, 1, 0, 0);
+      glRotatef(angle_Tete, 1, 0, 0);
       glCallList(Ma_Tete);
     glPopMatrix();
     glPushMatrix();
@@ -834,54 +964,115 @@ void render_scene()
       glPopMatrix();
       glPushMatrix();
         glTranslatef(-2.6, 2, -2.8);
-        glTranslatef(0, 0, 1);
+        glTranslatef(0, 0, 1*0.5);
         glRotatef(angle_Cuisse[Gauche], 0, 1, 0);
-        glTranslatef(0, 0, -1);
+        glTranslatef(0, 0, -1*0.5);
         glCallList(Ma_Cuisse);
         glTranslatef(0, 0, -1.2);
-        glTranslatef(0, 0, 1);
+        glTranslatef(0, 0, 1*0.5);
         glRotatef(angle_Mollet[Gauche],0,1,0);
-        glTranslatef(0, 0, -1);
+        glTranslatef(0, 0, -1*0.5);
         glCallList(Mon_Mollet);
       glPopMatrix();
       glPushMatrix();
         glTranslatef(-2.6, -2, -2.8);
-        glTranslatef(0, 0, 1);
+        glTranslatef(0, 0, 1*0.5);
         glRotatef(angle_Cuisse[Droit], 0, 1, 0);
-        glTranslatef(0, 0, -1);
+        glTranslatef(0, 0, -1*0.5);
         glCallList(Ma_Cuisse);
         glTranslatef(0, 0, -1.2);
-        glTranslatef(0, 0, 1);
+        glTranslatef(0, 0, 1*0.5);
         glRotatef(angle_Mollet[Droit],0,1,0);
-        glTranslatef(0, 0, -1);
+        glTranslatef(0, 0, -1*0.5);
         glCallList(Mon_Mollet);
       glPopMatrix();
       glPushMatrix();
         glTranslatef(2.4, 2, -2.8);
-        glTranslatef(0, 0, 1);
+        glTranslatef(0, 0, 1*0.5);
         glRotatef(angle_Bras[Gauche], 0, 1, 0);
-        glTranslatef(0, 0, -1);
+        glTranslatef(0, 0, -1*0.5);
         glCallList(Ma_Cuisse);
         glTranslatef(0, 0, -1.2);
-        glTranslatef(0, 0, 1);
+        glTranslatef(0, 0, 1*0.5);
         glRotatef(angle_AvantBras[Gauche],0,1,0);
-        glTranslatef(0, 0, -1);
+        glTranslatef(0, 0, -1*0.5);
         glCallList(Mon_Mollet);
       glPopMatrix();
       glPushMatrix();
         glTranslatef(2.4, -2, -2.8);
-        glTranslatef(0, 0, 1);
+        glTranslatef(0, 0, 1*0.5);
         glRotatef(angle_Bras[Droit], 0, 1, 0);
-        glTranslatef(0, 0, -1);
+        glTranslatef(0, 0, -1*0.5);
         glCallList(Ma_Cuisse);
         glTranslatef(0, 0, -1.2);
-        glTranslatef(0, 0, 1);
+        glTranslatef(0, 0, 1*0.5);
         glRotatef(angle_AvantBras[Droit],0,1,0);
-        glTranslatef(0, 0, -1);
+        glTranslatef(0, 0, -1*0.5);
         glCallList(Mon_Mollet);
       glPopMatrix();
     glPopMatrix();
   glPopMatrix();
+
+  /*glPushMatrix();
+    // Position assise
+    glTranslatef(0, 0, 5);
+    glRotatef(-70, 0, 1, 0);
+    glScalef(0.5, 0.5, 0.5);
+    glPushMatrix();
+      glRotatef(70, 0, 1, 0);
+      glCallList(Ma_Tete);
+    glPopMatrix();
+    glPushMatrix();
+      glTranslatef(-5.5, 0, -1);
+      glPushMatrix();
+        glCallList(Mon_Corps);
+      glPopMatrix();
+      glPushMatrix();
+        glTranslatef(-2.6, 2, -2.8);
+        glTranslatef(0, 0, 1*0.5);
+        glRotatef(-20, 0, 1, 0);
+        glRotatef(20, 1, 0, 0);
+        glTranslatef(0, 0, -1*0.5);
+        glCallList(Ma_Cuisse);
+        glTranslatef(0, 0, -1.2);
+        glCallList(Mon_Mollet);
+      glPopMatrix();
+      glPushMatrix();
+        glTranslatef(-2.6, -2, -2.8);
+        glTranslatef(0, 0, 1*0.5);
+        glRotatef(-20, 0, 1, 0);
+        glRotatef(-20, 1, 0, 0);
+        glTranslatef(0, 0, -1*0.5);
+        glCallList(Ma_Cuisse);
+        glTranslatef(0, 0, -1.2);
+        glCallList(Mon_Mollet);
+      glPopMatrix();
+      glPushMatrix();
+        glTranslatef(2.4, 2, -2.8);
+        glTranslatef(0, 0, 1*0.5);
+        glRotatef(20, 0, 1, 0);
+        glTranslatef(0, 0, -1*0.5);
+        glCallList(Ma_Cuisse);
+        glTranslatef(0, 0, -1.2);
+        glTranslatef(0, 0, 1*0.5);
+        glRotatef(-20,0,1,0);
+        glTranslatef(0, 0, -1*0.5);
+        glCallList(Mon_Mollet);
+      glPopMatrix();
+      glPushMatrix();
+        glTranslatef(2.4, -2, -2.8);
+        glTranslatef(0, 0, 1*0.5);
+        glRotatef(20, 0, 1, 0);
+        glTranslatef(0, 0, -1*0.5);
+        glCallList(Ma_Cuisse);
+        glTranslatef(0, 0, -1.2);
+        glTranslatef(0, 0, 1*0.5);
+        glRotatef(-20,0,1,0);
+        glTranslatef(0, 0, -1*0.5);
+        glCallList(Mon_Mollet);
+      glPopMatrix();
+    glPopMatrix();
+  glPopMatrix();*/
 
   dessiner_decor();
 
