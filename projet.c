@@ -185,6 +185,7 @@ GLvoid initGL();
 GLvoid window_display();
 GLvoid window_reshape(GLsizei width, GLsizei height); 
 GLvoid window_key(unsigned char key, int x, int y);
+GLvoid window_up_key(unsigned char key, int x, int y);
 GLvoid window_special_key(int key, int x, int y);
 GLvoid window_special_up_key(int key, int x, int y);
 GLvoid window_cliques_souris(int button, int state, int x, int y);
@@ -230,6 +231,8 @@ int main(int argc, char **argv)
   glutReshapeFunc(&window_reshape);
   // la gestion des événements clavier
   glutKeyboardFunc(&window_key);
+  // la gestion des relâchements de touche
+  glutKeyboardUpFunc(&window_up_key);
   // pour la pression sur les touches spéciales (flèches directionnelles, ...)
   glutSpecialFunc(&window_special_key);
   // pour le relâchement des touches spéciales
@@ -372,6 +375,17 @@ GLvoid window_key(unsigned char key, int x, int y)
     case KEY_ESC:  
       exit(1);                    
       break; 
+    default:
+      printf ("La touche %d n´est pas active.\n", key);
+      break;
+  }     
+}
+
+// fonction de call-back pour la gestion des événements clavier (relâchement)
+GLvoid window_up_key(unsigned char key, int x, int y) 
+{  
+  switch (key)
+  {
     // Augmentation de l'allure
     case '+':
       if(allure < Galop)
@@ -418,81 +432,44 @@ GLvoid window_key(unsigned char key, int x, int y)
 // Gestion de la pression des touches spéciales
 GLvoid window_special_key(int key, int x, int y)
 {
-  if(mode == Spectateur)
+  switch(key)
   {
-    switch(key)
-    {
-      // Gestion mouvements caméra
-      case GLUT_KEY_UP:
-        printf("GLUT_KEY_UP\n");
-        isKeyUp = 1;
-        isKeyDown = 0;
-        glutPostRedisplay();
-        break;
-      case GLUT_KEY_DOWN:
-        printf("GLUT_KEY_DOWN\n");
-        isKeyDown = 1;
-        isKeyUp = 0;
-        glutPostRedisplay();
-        break;
-      case GLUT_KEY_RIGHT:
-        printf("GLUT_KEY_LEFT\n");
-        isKeyRight = 1;
-        isKeyLeft = 0;
-        glutPostRedisplay();
-        break;
-      case GLUT_KEY_LEFT:
-        printf("GLUT_KEY_RIGHT\n");
-        isKeyLeft = 1;
-        isKeyRight = 0;
-        glutPostRedisplay();
-        break;
-      default:
-        printf ("La touche %d n´est pas active.\n", key);
-        break;
-    }
-  }
-  else
-  {
-    switch(key)
-    {
-      // Gestion mouvements caméra
-      case GLUT_KEY_UP:
-        printf("GLUT_KEY_UP\n");
-        isKeyUp = 1;
-        isKeyDown = 0;
-        // DEPLACEMENT DE LA CAMERA AVEC LE PANDA
-        //addition_vectorielle(&camera.position, 1, camera.position, K, camera.vecteur_observation);
-        glutPostRedisplay();
-        break;
-      case GLUT_KEY_DOWN:
-        printf("GLUT_KEY_DOWN\n");
-        isKeyDown = 1;
-        isKeyUp = 0;
-        // DEPLACEMENT DE LA CAMERA AVEC LE PANDA
-        //addition_vectorielle(&camera.position, 1, camera.position, -K, camera.vecteur_observation);
-        glutPostRedisplay();
-        break;
-      case GLUT_KEY_RIGHT:
-        printf("GLUT_KEY_LEFT\n");
-        isKeyRight = 1;
-        isKeyLeft = 0;
-        // DEPLACEMENT DE LA CAMERA AVEC LE PANDA
-        //addition_vectorielle(&camera.position, 1, camera.position, K, camera.vecteur_normal);
-        glutPostRedisplay();
-        break;
-      case GLUT_KEY_LEFT:
-        printf("GLUT_KEY_RIGHT\n");
-        isKeyLeft = 1;
-        isKeyRight = 0;
-        // DEPLACEMENT DE LA CAMERA AVEC LE PANDA
-        //addition_vectorielle(&camera.position, 1, camera.position, -K, camera.vecteur_normal);
-        glutPostRedisplay();
-        break;
-      default:
-        printf ("La touche %d n´est pas active.\n", key);
-        break;
-    }
+    // Gestion mouvements caméra
+    case GLUT_KEY_UP:
+      printf("GLUT_KEY_UP\n");
+      isKeyUp = 1;
+      isKeyDown = 0;
+      // DEPLACEMENT DE LA CAMERA AVEC LE PANDA
+      //addition_vectorielle(&camera.position, 1, camera.position, K, camera.vecteur_observation);
+      glutPostRedisplay();
+      break;
+    case GLUT_KEY_DOWN:
+      printf("GLUT_KEY_DOWN\n");
+      isKeyDown = 1;
+      isKeyUp = 0;
+      // DEPLACEMENT DE LA CAMERA AVEC LE PANDA
+      //addition_vectorielle(&camera.position, 1, camera.position, -K, camera.vecteur_observation);
+      glutPostRedisplay();
+      break;
+    case GLUT_KEY_RIGHT:
+      printf("GLUT_KEY_LEFT\n");
+      isKeyRight = 1;
+      isKeyLeft = 0;
+      // DEPLACEMENT DE LA CAMERA AVEC LE PANDA
+      //addition_vectorielle(&camera.position, 1, camera.position, K, camera.vecteur_normal);
+      glutPostRedisplay();
+      break;
+    case GLUT_KEY_LEFT:
+      printf("GLUT_KEY_RIGHT\n");
+      isKeyLeft = 1;
+      isKeyRight = 0;
+      // DEPLACEMENT DE LA CAMERA AVEC LE PANDA
+      //addition_vectorielle(&camera.position, 1, camera.position, -K, camera.vecteur_normal);
+      glutPostRedisplay();
+      break;
+    default:
+      printf ("La touche %d n´est pas active.\n", key);
+      break;
   }
 }
 
@@ -572,13 +549,13 @@ GLvoid window_timer()
   {
     if(isKeyUp)
     {
-      t += delta;
-      tPosition += delta;
+      t += delta*allure;
+      tPosition += delta*allure;
     }
     else if(isKeyDown)
     {
-      t += delta;
-      tPosition -= delta;
+      t += delta*allure;
+      tPosition -= delta*allure;
     }
 
     if(isKeyRight)
@@ -590,11 +567,7 @@ GLvoid window_timer()
       tCote += delta;
     }
 
-    if(!isKeyUp && !isKeyDown && !isKeyRight && !isKeyLeft)
-    {
-      allure = Arret;
-    }
-    else if(allure < Pas)
+    if(allure < Pas)
     {
       allure++;
     }
@@ -618,15 +591,36 @@ GLvoid window_timer()
     {
       addition_vectorielle(&camera.position, 1, camera.position, -camera.pas, camera.vecteur_normal);  
     }
+
+    if(mode == Spectateur && allure > Arret)
+    {
+      tPosition += delta*allure;
+      t += delta*allure;
+    }
   }
-
-
 
   // On effecture une variation des angles de chaque membre
   // de l'amplitude associée et de la position médiane
 
+  // Si on est a l'arrêt
+  if((mode == Panda && !isKeyUp && !isKeyDown && !isKeyRight && !isKeyLeft) || (mode == Spectateur && allure == Arret))
+  {
+    t = 0;
+    angle_Bras[ Gauche ] = med_Bras + sin(k*t)*amplitude_Bras;
+    angle_AvantBras[ Gauche ] = med_AvantBras + sin(k*t)*amplitude_AvantBras;
+    angle_Cuisse[ Gauche ] = med_Cuisse + sin(k*t)*amplitude_Cuisse;
+    angle_Mollet[ Gauche ] = med_Mollet + sin(k*t)*amplitude_Mollet;
+
+    angle_Bras[ Droit ] = med_Bras - sin(k*t)*amplitude_Bras;
+    angle_AvantBras[ Droit ] = med_AvantBras - sin(k*t)*amplitude_AvantBras;
+    angle_Cuisse[ Droit ] = med_Cuisse - sin(k*t)*amplitude_Cuisse;
+    angle_Mollet[ Droit ] = med_Mollet - sin(k*t)*amplitude_Mollet;
+
+    angle_Corps = med_Corps - sin(k*t)*amplitude_Corps;
+    angle_Tete = med_Tete - sin(k*t)*amplitude_Tete;
+  }
   // Si on est au pas
-  if(allure == Pas)
+  else if(allure == Pas)
   {
     angle_Bras[ Gauche ] = med_Bras + sin(k*t)*amplitude_Bras;
     angle_AvantBras[ Gauche ] = med_AvantBras + sin(k*t)*amplitude_AvantBras;
@@ -673,23 +667,6 @@ GLvoid window_timer()
     angle_Corps = med_Corps - sin(k*t)*amplitude_Corps;
     angle_Tete = med_Tete - sin(k*t)*amplitude_Tete;
   }
-  // Si on est à l'arrêt
-  else
-  {
-    t = 0;
-    angle_Bras[ Gauche ] = med_Bras + sin(k*t)*amplitude_Bras;
-    angle_AvantBras[ Gauche ] = med_AvantBras + sin(k*t)*amplitude_AvantBras;
-    angle_Cuisse[ Gauche ] = med_Cuisse + sin(k*t)*amplitude_Cuisse;
-    angle_Mollet[ Gauche ] = med_Mollet + sin(k*t)*amplitude_Mollet;
-
-    angle_Bras[ Droit ] = med_Bras - sin(k*t)*amplitude_Bras;
-    angle_AvantBras[ Droit ] = med_AvantBras - sin(k*t)*amplitude_AvantBras;
-    angle_Cuisse[ Droit ] = med_Cuisse - sin(k*t)*amplitude_Cuisse;
-    angle_Mollet[ Droit ] = med_Mollet - sin(k*t)*amplitude_Mollet;
-
-    angle_Corps = med_Corps - sin(k*t)*amplitude_Corps;
-    angle_Tete = med_Tete - sin(k*t)*amplitude_Tete;
-  }
 
   // On déplace la position de l'avatar pour qu'il avance
   position = position_Ini + K*tPosition;
@@ -697,12 +674,6 @@ GLvoid window_timer()
   
   if (!IdleRunning)
     glutTimerFunc(latence,&window_timer,++Step);
-
-  if(mode == Spectateur && allure > Arret)
-  {
-    tPosition += delta;
-    t += delta;
-  }
 
   glutPostRedisplay();
 }
