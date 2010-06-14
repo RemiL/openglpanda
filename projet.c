@@ -36,6 +36,7 @@ Rémi LACROIX et Nicolas POIRIER
 #define positionCote_Ini 0.0
 
 float t = 0.f;
+float tPosition = 0.f;
 float tCote = 0.f;
 float delta = 50.f;
 float k = 0.001f;
@@ -45,6 +46,12 @@ int TraceEcran = false;
 int RangFichierStockage = 0;
 float position = position_Ini;
 float positionCote = positionCote_Ini;
+
+// Permet de savoir les touches directionnelles apuyées
+int isKeyUp = 0;
+int isKeyDown = 0;
+int isKeyRight = 0;
+int isKeyLeft = 0;
 
 int  Ma_Tete;
 int  Ma_Tache;
@@ -179,6 +186,7 @@ GLvoid window_display();
 GLvoid window_reshape(GLsizei width, GLsizei height); 
 GLvoid window_key(unsigned char key, int x, int y);
 GLvoid window_special_key(int key, int x, int y);
+GLvoid window_special_up_key(int key, int x, int y);
 GLvoid window_cliques_souris(int button, int state, int x, int y);
 GLvoid window_mouvements_souris(int x, int y);
 GLvoid window_mouvements_passifs_souris(int x, int y);
@@ -222,7 +230,10 @@ int main(int argc, char **argv)
   glutReshapeFunc(&window_reshape);
   // la gestion des événements clavier
   glutKeyboardFunc(&window_key);
-  glutSpecialFunc(&window_special_key); // pour les touches spéciales (flèches directionnelles, ...)
+  // pour la pression sur les touches spéciales (flèches directionnelles, ...)
+  glutSpecialFunc(&window_special_key);
+  // pour le relâchement des touches spéciales
+  glutSpecialUpFunc(&window_special_up_key); 
   // Gestion des cliques souris
   glutMouseFunc(&window_cliques_souris);
   // Gestion des mouvements de la souris
@@ -354,7 +365,6 @@ GLvoid window_reshape(GLsizei width, GLsizei height)
 }
 
 // fonction de call-back pour la gestion des événements clavier
-
 GLvoid window_key(unsigned char key, int x, int y) 
 {  
   switch (key)
@@ -382,11 +392,16 @@ GLvoid window_key(unsigned char key, int x, int y)
       if(mode == Spectateur)
       {
         mode = Panda;
+        isKeyUp = 0;
+        isKeyDown = 0;
+        isKeyRight = 0;
+        isKeyLeft = 0;
         // Mettre la camera sur la tete du panda !!!!!!!!!!!!!!!
       }
       else
       {
         mode = Spectateur;
+        allure = Arret;
       }
       break;
     // Gestion mode caméra
@@ -400,7 +415,7 @@ GLvoid window_key(unsigned char key, int x, int y)
   }     
 }
 
-// Gestion des touches spéciales
+// Gestion de la pression des touches spéciales
 GLvoid window_special_key(int key, int x, int y)
 {
   if(mode == Spectateur)
@@ -410,22 +425,26 @@ GLvoid window_special_key(int key, int x, int y)
       // Gestion mouvements caméra
       case GLUT_KEY_UP:
         printf("GLUT_KEY_UP\n");
-        addition_vectorielle(&camera.position, 1, camera.position, camera.pas, camera.vecteur_observation);
+        isKeyUp = 1;
+        isKeyDown = 0;
         glutPostRedisplay();
         break;
       case GLUT_KEY_DOWN:
         printf("GLUT_KEY_DOWN\n");
-        addition_vectorielle(&camera.position, 1, camera.position, -camera.pas, camera.vecteur_observation);
+        isKeyDown = 1;
+        isKeyUp = 0;
         glutPostRedisplay();
         break;
       case GLUT_KEY_RIGHT:
         printf("GLUT_KEY_LEFT\n");
-        addition_vectorielle(&camera.position, 1, camera.position, camera.pas, camera.vecteur_normal);
+        isKeyRight = 1;
+        isKeyLeft = 0;
         glutPostRedisplay();
         break;
       case GLUT_KEY_LEFT:
         printf("GLUT_KEY_RIGHT\n");
-        addition_vectorielle(&camera.position, 1, camera.position, -camera.pas, camera.vecteur_normal);
+        isKeyLeft = 1;
+        isKeyRight = 0;
         glutPostRedisplay();
         break;
       default:
@@ -440,48 +459,71 @@ GLvoid window_special_key(int key, int x, int y)
       // Gestion mouvements caméra
       case GLUT_KEY_UP:
         printf("GLUT_KEY_UP\n");
-        addition_vectorielle(&camera.position, 1, camera.position, camera.pas, camera.vecteur_observation);
-        if(allure < Pas)
-        {
-           allure++;
-        }
-        t += delta;
+        isKeyUp = 1;
+        isKeyDown = 0;
+        // DEPLACEMENT DE LA CAMERA AVEC LE PANDA
+        //addition_vectorielle(&camera.position, 1, camera.position, K, camera.vecteur_observation);
         glutPostRedisplay();
         break;
       case GLUT_KEY_DOWN:
         printf("GLUT_KEY_DOWN\n");
-        addition_vectorielle(&camera.position, 1, camera.position, -camera.pas, camera.vecteur_observation);
-        if(allure < Pas)
-        {
-           allure++;
-        }
-        t -= delta;
+        isKeyDown = 1;
+        isKeyUp = 0;
+        // DEPLACEMENT DE LA CAMERA AVEC LE PANDA
+        //addition_vectorielle(&camera.position, 1, camera.position, -K, camera.vecteur_observation);
         glutPostRedisplay();
         break;
       case GLUT_KEY_RIGHT:
         printf("GLUT_KEY_LEFT\n");
-        addition_vectorielle(&camera.position, 1, camera.position, camera.pas, camera.vecteur_normal);
-        if(allure < Pas)
-        {
-           allure++;
-        }
-        tCote -= delta;
+        isKeyRight = 1;
+        isKeyLeft = 0;
+        // DEPLACEMENT DE LA CAMERA AVEC LE PANDA
+        //addition_vectorielle(&camera.position, 1, camera.position, K, camera.vecteur_normal);
         glutPostRedisplay();
         break;
       case GLUT_KEY_LEFT:
         printf("GLUT_KEY_RIGHT\n");
-        addition_vectorielle(&camera.position, 1, camera.position, -camera.pas, camera.vecteur_normal);
-        if(allure < Pas)
-        {
-           allure++;
-        }
-        tCote += delta;
+        isKeyLeft = 1;
+        isKeyRight = 0;
+        // DEPLACEMENT DE LA CAMERA AVEC LE PANDA
+        //addition_vectorielle(&camera.position, 1, camera.position, -K, camera.vecteur_normal);
         glutPostRedisplay();
         break;
       default:
         printf ("La touche %d n´est pas active.\n", key);
         break;
     }
+  }
+}
+
+// Gestion du relâchement des touches spéciales
+GLvoid window_special_up_key(int key, int x, int y)
+{
+  switch(key)
+  {
+    case GLUT_KEY_UP:
+      printf("GLUT_KEY_UP_UP\n");
+      isKeyUp = 0;
+      glutPostRedisplay();
+      break;
+    case GLUT_KEY_DOWN:
+      printf("GLUT_KEY_DOWN_UP\n");
+      isKeyDown = 0;
+      glutPostRedisplay();
+      break;
+    case GLUT_KEY_RIGHT:
+      printf("GLUT_KEY_LEFT_UP\n");
+      isKeyRight = 0;
+      glutPostRedisplay();
+      break;
+    case GLUT_KEY_LEFT:
+      printf("GLUT_KEY_RIGHT_UP\n");
+      isKeyLeft = 0;
+      glutPostRedisplay();
+      break;
+    default:
+      printf ("La touche %d n´est pas active.\n", key);
+      break;
   }
 }
 
@@ -508,7 +550,7 @@ GLvoid window_mouvements_souris(int x, int y)
 
     position_clique_x = x;
     position_clique_y = y;
-    
+
     camera_actualiser_position();
   }
 }
@@ -517,7 +559,7 @@ GLvoid window_mouvements_passifs_souris(int x, int y)
 {
   camera.angle_h += (double)(x - (window_width/2)) * PI / window_width;
   camera.angle_v += (double)(y - (window_height/2)) * PI / window_height;
-  
+
   camera_actualiser_position();
 }
 
@@ -525,6 +567,61 @@ GLvoid window_mouvements_passifs_souris(int x, int y)
 
 GLvoid window_timer() 
 {
+  // On met à jour les variables en fonction de des touches appuyées
+  if(mode == Panda)
+  {
+    if(isKeyUp)
+    {
+      t += delta;
+      tPosition += delta;
+    }
+    else if(isKeyDown)
+    {
+      t += delta;
+      tPosition -= delta;
+    }
+
+    if(isKeyRight)
+    {
+      tCote -= delta;
+    }
+    else if(isKeyLeft)
+    {
+      tCote += delta;
+    }
+
+    if(!isKeyUp && !isKeyDown && !isKeyRight && !isKeyLeft)
+    {
+      allure = Arret;
+    }
+    else if(allure < Pas)
+    {
+      allure++;
+    }
+  }
+  else
+  {
+    if(isKeyUp)
+    {
+      addition_vectorielle(&camera.position, 1, camera.position, camera.pas, camera.vecteur_observation);
+    }
+    else if(isKeyDown)
+    {
+      addition_vectorielle(&camera.position, 1, camera.position, -camera.pas, camera.vecteur_observation);
+    }
+
+    if(isKeyRight)
+    {
+      addition_vectorielle(&camera.position, 1, camera.position, camera.pas, camera.vecteur_normal);
+    }
+    else if(isKeyLeft)
+    {
+      addition_vectorielle(&camera.position, 1, camera.position, -camera.pas, camera.vecteur_normal);  
+    }
+  }
+
+
+
   // On effecture une variation des angles de chaque membre
   // de l'amplitude associée et de la position médiane
 
@@ -579,11 +676,23 @@ GLvoid window_timer()
   // Si on est à l'arrêt
   else
   {
+    t = 0;
+    angle_Bras[ Gauche ] = med_Bras + sin(k*t)*amplitude_Bras;
+    angle_AvantBras[ Gauche ] = med_AvantBras + sin(k*t)*amplitude_AvantBras;
+    angle_Cuisse[ Gauche ] = med_Cuisse + sin(k*t)*amplitude_Cuisse;
+    angle_Mollet[ Gauche ] = med_Mollet + sin(k*t)*amplitude_Mollet;
 
+    angle_Bras[ Droit ] = med_Bras - sin(k*t)*amplitude_Bras;
+    angle_AvantBras[ Droit ] = med_AvantBras - sin(k*t)*amplitude_AvantBras;
+    angle_Cuisse[ Droit ] = med_Cuisse - sin(k*t)*amplitude_Cuisse;
+    angle_Mollet[ Droit ] = med_Mollet - sin(k*t)*amplitude_Mollet;
+
+    angle_Corps = med_Corps - sin(k*t)*amplitude_Corps;
+    angle_Tete = med_Tete - sin(k*t)*amplitude_Tete;
   }
 
   // On déplace la position de l'avatar pour qu'il avance
-  position = position_Ini + K*t;
+  position = position_Ini + K*tPosition;
   positionCote = positionCote_Ini + K*tCote;
   
   if (!IdleRunning)
@@ -591,6 +700,7 @@ GLvoid window_timer()
 
   if(mode == Spectateur && allure > Arret)
   {
+    tPosition += delta;
     t += delta;
   }
 
