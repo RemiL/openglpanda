@@ -17,6 +17,7 @@ Rémi LACROIX et Nicolas POIRIER
 #include <time.h>
 
 #include "bambou.h"
+#include "panda.h"
 
 #define windowWidth 600
 #define windowHeight 600
@@ -55,22 +56,15 @@ int isKeyDown = 0;
 int isKeyRight = 0;
 int isKeyLeft = 0;
 
-GLuint  Ma_Tete;
-GLuint  Ma_Tache;
-GLuint  Mon_Oeil;
-GLuint  Ma_Pupille;
-GLuint  Mon_Oreille;
-GLuint  Mon_Tronc;
-GLuint  Mon_Museau;
-GLuint  Mon_Nez;
-GLuint  Mon_AvantBras;
-GLuint  Ma_Cuisse;
-GLuint  Mon_Mollet;
-GLuint  Mon_Corps;
-GLuint  Ma_Cuisse;
-GLuint  Mon_Mollet;
-GLuint  Ma_Foret;
+// Display lists du Panda
+GLuint Ma_Tete;
+GLuint Mon_Corps;
+GLuint Ma_Cuisse;
+GLuint Mon_Mollet;
+// Display lists du décor
+GLuint Ma_Foret;
 
+// Textures
 GLuint texture_herbe;
 
 enum lateralite{ Gauche = 0, Droit };
@@ -176,6 +170,8 @@ int nb_aleatoire(int min, int max)
 }
 
 void init_scene();
+void dessiner_decor();
+void dessiner_panda();
 void render_scene();
 void init_angles();
 GLvoid initGL();
@@ -284,7 +280,7 @@ GLvoid initGL()
   
 void init_scene()
 {  
-  // initialise des display lists des composantes du corps
+  // initialise les display lists
   Faire_Composantes();
 
   // Initialisation camera
@@ -760,149 +756,13 @@ void Faire_Composantes()
   // les ombrages, s´il y en a, sont doux
   gluQuadricNormals(qobj, GLU_SMOOTH);
 
-  // attribution des indentificateurs de display lists
-  Ma_Tete = glGenLists(14);
-  Ma_Tache = Ma_Tete + 1;
-  Mon_Oeil = Ma_Tache + 1;
-  Ma_Pupille = Mon_Oeil + 1;
-  Mon_Oreille = Ma_Pupille + 1;
-  Mon_Museau = Mon_Oreille + 1;
-  Mon_Nez = Mon_Museau + 1;
-  Mon_Tronc = Mon_Nez + 1;
-  Mon_AvantBras = Mon_Tronc + 1;
-  Ma_Cuisse = Mon_AvantBras + 1;
-  Mon_Mollet = Ma_Cuisse + 1;
-  Mon_Corps = Mon_Mollet + 1;
-  Ma_Cuisse = Mon_Corps + 1;
-  Mon_Mollet = Ma_Cuisse + 1;
-
-  glNewList(Ma_Tache, GL_COMPILE);
-    glColor3f(0.0, 0.0, 0.0);
-    glScalef(0.3, 1.2, 1.6);
-    glutSolidSphere(0.8, 50, 50);
-  glEndList();
-
-  glNewList(Mon_Oeil, GL_COMPILE);
-    glColor3f(1.0, 1.0, 1.0);
-    glScalef(0.3, 1.3, 1.3);
-    glutSolidSphere(0.4, 50, 50);
-  glEndList();
-
-  glNewList(Ma_Pupille, GL_COMPILE);
-    glColor3f(0.0, 0.0, 0.0);
-    glScalef(0.3, 1.2, 1.2);
-    glutSolidSphere(0.2, 50, 50);
-  glEndList();
-
-  glNewList(Mon_Oreille, GL_COMPILE);
-    glColor3f(0.0, 0.0, 0.0);
-    glScalef(0.2, 1, 1);
-    glutSolidSphere(1, 50, 50);
-  glEndList();
-
-  glNewList(Mon_Museau, GL_COMPILE);
-    glColor3f(1.0, 1.0, 1.0);
-    glScalef(1.5, 1.8, 1.5);
-    glutSolidSphere(1, 50, 50);
-  glEndList();
-
-  glNewList(Mon_Nez, GL_COMPILE);
-    glColor3f(0.0, 0.0, 0.0);
-    glScalef(0.5, 1, 0.8);
-    glutSolidSphere(0.2, 50, 50);
-  glEndList();
-
-  glNewList(Mon_Corps, GL_COMPILE);
-    glPushMatrix();
-      glColor3f(1.0, 1.0, 1.0);
-      glScalef(1, 0.75, 0.75);
-      glutSolidSphere(5, 50, 50);
-    glPopMatrix();
-    glPushMatrix();
-      glColor3f(0.0, 0.0, 0.0);
-      glTranslatef(1.6, 0, 0);
-      glScalef(0.6, 0.75, 0.75);
-      glutSolidSphere(4.8, 50, 50);
-    glPopMatrix();
-    glPushMatrix();
-      glColor3f(0.0, 0.0, 0.0);
-      glTranslatef(-4.8, 0, 1.8);
-      glScalef(0.7, 0.7, 1);
-      glutSolidSphere(1, 50, 50);
-    glPopMatrix();
-  glEndList();
-
-  glNewList(Ma_Cuisse, GL_COMPILE);
-    glPushMatrix();
-      glColor3f(0.0, 0.0, 0.0);
-      glScalef(0.5, 0.5, 1);
-      glutSolidSphere(2.5, 50, 50);
-    glPopMatrix();
-  glEndList();
-
-  glNewList(Mon_Mollet, GL_COMPILE);
-    glPushMatrix();
-      glColor3f(0.0, 0.0, 0.0);
-      glScalef(0.5, 0.5, 1);
-      glutSolidSphere(2.5, 50, 50);
-    glPopMatrix();
-  glEndList();
-
-  // compilation de la display list de la sphère servant de tête
-  glNewList(Ma_Tete, GL_COMPILE);
-    // Tête en elle même
-    glColor3f(1.0, 1.0, 1.0);
-    glutSolidSphere(3.5, 50, 50);
-
-    // Yeux
-    glPushMatrix();
-      glTranslatef(3.1, 0.0, 0.3);
-      glPushMatrix();
-        glTranslatef(0.0, 1.15, 0.0);
-        glRotatef(30, 1, 0, 0);
-        glRotatef(22, 0, 0, 1);
-        glRotatef(8, 0, 1, 0);
-        glCallList(Ma_Tache);
-        glTranslatef(0.7, 0.0, 0.0);
-        glCallList(Mon_Oeil);
-        glTranslatef(0.5, 0.0, 0.0);
-        glCallList(Ma_Pupille);
-      glPopMatrix();
-      glPushMatrix();
-        glTranslatef(0.0, -1.15, 0.0);
-        glRotatef(-30, 1, 0, 0);
-        glRotatef(-22, 0, 0, 1);
-        glRotatef(8, 0, 1, 0);
-        glCallList(Ma_Tache);
-        glTranslatef(0.7, 0.0, 0.0);
-        glCallList(Mon_Oeil);
-        glTranslatef(0.5, 0.0, 0.0);
-        glCallList(Ma_Pupille);
-      glPopMatrix();
-    glPopMatrix();
-
-    // Oreilles
-    glPushMatrix();
-      glTranslatef(0, 0.0, 2.7);
-      glPushMatrix();
-        glTranslatef(0.0, 2.5, 0.0);
-        glCallList(Mon_Oreille);
-      glPopMatrix();
-      glPushMatrix();
-        glTranslatef(0.0, -2.5, 0.0);
-        glCallList(Mon_Oreille);
-      glPopMatrix();
-    glPopMatrix();
-
-    // Museau
-    glPushMatrix();
-      glTranslatef(2.4, 0.0, -1.3);
-      glCallList(Mon_Museau);
-      glTranslatef(1.0, 0.0, 0.0);
-      glCallList(Mon_Nez);
-    glPopMatrix();
-  glEndList();
-
+  // Panda
+  Ma_Tete = faire_tete_panda();
+  Mon_Corps = faire_corps_panda();
+  Ma_Cuisse = faire_cuisse_panda();
+  Mon_Mollet = faire_mollet_panda();
+  
+  // Décor
   Ma_Foret = faire_foret_bambous(60, 20);
 }
 
@@ -933,12 +793,12 @@ void dessiner_decor()
   glPopMatrix();
 }
 
-void render_scene()
+void dessiner_panda()
 {
   glPushMatrix();
     // déplacement horizontal selon l´axe Ox pour donner 
     // une impression de déplacement horizontal accompagnant
-    // la marchegl
+    // la marche
     glTranslatef(position, positionCote, 3.7+dzArret);
     glScalef(0.5, 0.5, 0.5);
     glRotatef(angle_Corps_Arret, 0, 1, 0);
@@ -1003,6 +863,11 @@ void render_scene()
       glPopMatrix();
     glPopMatrix();
   glPopMatrix();
+}
+
+void render_scene()
+{
+  dessiner_panda();
 
   dessiner_decor();
 
