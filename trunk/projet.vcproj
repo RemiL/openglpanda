@@ -166,6 +166,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\camera.c"
+				>
+			</File>
+			<File
 				RelativePath=".\panda.c"
 				>
 			</File>
@@ -181,6 +185,10 @@
 			>
 			<File
 				RelativePath=".\bambou.h"
+				>
+			</File>
+			<File
+				RelativePath=".\camera.h"
 				>
 			</File>
 			<File
