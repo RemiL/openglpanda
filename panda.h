@@ -1,11 +1,7 @@
 #ifndef __panda_h__
 #define __panda_h__
 
-#include <windows.h>
-
-#include <GL/gl.h>
-#include <GL/glu.h>
-#include <GL/glut.h>
+#include "common.h"
 
 GLuint faire_tete_panda();
 GLuint faire_corps_panda();

@@ -170,11 +170,19 @@
 				>
 			</File>
 			<File
+				RelativePath=".\common.c"
+				>
+			</File>
+			<File
 				RelativePath=".\panda.c"
 				>
 			</File>
 			<File
 				RelativePath=".\projet.c"
+				>
+			</File>
+			<File
+				RelativePath=".\textures.c"
 				>
 			</File>
 		</Filter>
@@ -192,7 +200,15 @@
 				>
 			</File>
 			<File
+				RelativePath=".\common.h"
+				>
+			</File>
+			<File
 				RelativePath=".\panda.h"
+				>
+			</File>
+			<File
+				RelativePath=".\textures.h"
 				>
 			</File>
 		</Filter>

@@ -1,11 +1,7 @@
 #ifndef __bambou_h__
 #define __bambou_h__
 
-#include <windows.h>
-
-#include <GL/gl.h>
-#include <GL/glu.h>
-#include <GL/glut.h>
+#include "common.h"
 
 void faire_composantes_bambou();
 void faire_bambou(GLuint liste, int hauteur, int nb_branches);
