@@ -49,10 +49,13 @@ GLuint Mon_Corps;
 GLuint Ma_Cuisse;
 GLuint Mon_Mollet;
 // Display lists du décor
+GLuint Mon_Sol;
+GLuint Mon_Ciel;
 GLuint Ma_Foret;
 
 // Textures
 GLuint texture_herbe;
+GLuint texture_ciel;
 
 enum lateralite{ Gauche = 0, Droit };
 
@@ -215,6 +218,7 @@ GLvoid initGL()
   glEnable(GL_DEPTH_TEST);
 
   texture_herbe = LoadTextureRAW("herbe.raw", 1, 256, 256);
+  texture_ciel  = LoadTextureRAW("ciel.raw", 1, 2048, 1024);
 }
   
 void init_scene()
@@ -291,7 +295,7 @@ GLvoid window_reshape(GLsizei width, GLsizei height)
   glLoadIdentity();
   // glOrtho(-20, 20, -20, 20, -1000, 1000);
   // glFrustum(-20, 20, -20, 20, 10, 1000);
-  gluPerspective(70, (float) width / height, 1, 1000);
+  gluPerspective(70, (float) width / height, 1, 1500);
   // glScalef(10, 10, 10);
 
   // toutes les transformations suivantes s´appliquent au modèle de vue 
@@ -686,6 +690,7 @@ GLvoid window_timer()
 
 void Faire_Composantes()
 {
+  int taille = 1000;
   GLUquadricObj* qobj; /*GLAPIENTRY*/
 
    // allocation d´une description de quadrique
@@ -703,30 +708,46 @@ void Faire_Composantes()
   
   // Décor
   Ma_Foret = faire_foret_bambous(60, 20);
+
+  Mon_Sol = glGenLists(2);
+  Mon_Ciel = Mon_Sol + 1;
+  
+  glNewList(Mon_Sol, GL_COMPILE);
+    glPushMatrix();
+      glEnable(GL_TEXTURE_2D);
+      glBindTexture(GL_TEXTURE_2D, texture_herbe);
+      glBegin(GL_QUADS);
+        glColor3f(1, 1, 1);
+        glTexCoord2i(0, 0);
+        glVertex2i(-taille, -taille);
+        glTexCoord2i(taille/20, 0);
+        glVertex2i(taille, -taille);
+        glTexCoord2i(taille/20, taille/20);
+        glVertex2i(taille, taille);
+        glTexCoord2i(0, taille/20);
+        glVertex2i(-taille, taille);
+      glEnd();
+      glDisable(GL_TEXTURE_2D);
+    glPopMatrix();
+  glEndList();
+  
+  glNewList(Mon_Ciel, GL_COMPILE);
+    glPushMatrix();
+      glEnable(GL_TEXTURE_2D);
+      glBindTexture(GL_TEXTURE_2D, texture_ciel);
+      gluQuadricTexture(qobj, GL_TRUE);
+      gluSphere(qobj, taille, 30, 30);
+      glDisable(GL_TEXTURE_2D);
+    glPopMatrix();
+  glEndList();
 }
 
 void dessiner_decor()
 {
-  int taille = 500;
-
   glPushMatrix();
-    glEnable(GL_TEXTURE_2D);
-    glBindTexture(GL_TEXTURE_2D, texture_herbe);
-    glBegin(GL_QUADS);
-      glColor3f(1, 1, 1);
-      glTexCoord2i(0, 0);
-      glVertex2i(-taille, -taille);
-      glTexCoord2i(taille/20, 0);
-      glVertex2i(taille, -taille);
-      glTexCoord2i(taille/20, taille/20);
-      glVertex2i(taille, taille);
-      glTexCoord2i(0, taille/20);
-      glVertex2i(-taille, taille);
-    glEnd();
-    glDisable(GL_TEXTURE_2D);
-  glPopMatrix();
-
-  glPushMatrix();
+    glCallList(Mon_Sol);
+    glCallList(Mon_Ciel);
+    
     glTranslatef(0, 0, 5);
     glCallList(Ma_Foret);
   glPopMatrix();
