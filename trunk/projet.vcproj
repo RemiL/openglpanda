@@ -166,6 +166,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\panda.c"
+				>
+			</File>
+			<File
 				RelativePath=".\projet.c"
 				>
 			</File>
@@ -177,6 +181,10 @@
 			>
 			<File
 				RelativePath=".\bambou.h"
+				>
+			</File>
+			<File
+				RelativePath=".\panda.h"
 				>
 			</File>
 		</Filter>
