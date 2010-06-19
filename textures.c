@@ -1,10 +1,9 @@
 #include "textures.h"
 
-// load a 256x256 RGB .RAW file as a texture
-GLuint LoadTextureRAW(const char * filename, int wrap)
+// load a width x height RGB .RAW file as a texture
+GLuint LoadTextureRAW(const char * filename, int wrap, int width, int height)
 {
     GLuint texture;
-    int width, height;
     char * data;
     FILE * file;
 
@@ -13,8 +12,6 @@ GLuint LoadTextureRAW(const char * filename, int wrap)
     if ( file == NULL ) return 0;
 
     // allocate buffer
-    width = 256;
-    height = 256;
     data = (char *) malloc( width * height * 3 );
 
     // read texture data

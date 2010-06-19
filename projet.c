@@ -214,7 +214,7 @@ GLvoid initGL()
   // z-buffer
   glEnable(GL_DEPTH_TEST);
 
-  texture_herbe = LoadTextureRAW("herbe.raw", 1);
+  texture_herbe = LoadTextureRAW("herbe.raw", 1, 256, 256);
 }
   
 void init_scene()
