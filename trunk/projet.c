@@ -5,16 +5,7 @@ par
 
 Rémi LACROIX et Nicolas POIRIER
 ******************************************************************************/
-#include <windows.h>
-
-#include <GL/gl.h>
-#include <GL/glu.h>
-#include <GL/glut.h>
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <math.h>
-#include <time.h>
+#include "common.h"
 
 #include "bambou.h"
 #include "panda.h"
@@ -28,12 +19,7 @@ Rémi LACROIX et Nicolas POIRIER
 #define BLUE  1
 #define ALPHA 1
 
-#define true  1
-#define false 0
-
 #define KEY_ESC 27
-
-#define PI 3.1415926535898
 
 #define position_Ini -60.0
 #define positionCote_Ini 0.0
@@ -134,20 +120,6 @@ int camera_deplacement_active = false;
 int Step = 0;
 int latence = 4;
 
-int nb_aleatoire(int min, int max)
-{
-  int n = max - min;
-  int partSize   = 1 + (n == RAND_MAX ? 0 : (RAND_MAX - n) / (n + 1));
-  int maxUsefull = partSize * n + (partSize - 1);
-  int draw;
-  
-  do {
-      draw = rand();
-  } while (draw > maxUsefull);
-  
-  return ((draw / partSize) + min);
-}
-
 void init_scene();
 void dessiner_decor();
 void dessiner_panda();
@@ -165,7 +137,6 @@ GLvoid window_mouvements_souris(int x, int y);
 GLvoid window_mouvements_passifs_souris(int x, int y);
 GLvoid window_timer(); 
 void Faire_Composantes();
-GLuint LoadTextureRAW( const char * filename, int wrap );
 
 int main(int argc, char **argv) 
 {
@@ -841,57 +812,4 @@ void render_scene()
 
   // permutation des buffers lorsque le tracé est achevé
   glutSwapBuffers();
-}
-
-// load a 256x256 RGB .RAW file as a texture
-GLuint LoadTextureRAW( const char * filename, int wrap )
-{
-    GLuint texture;
-    int width, height;
-    char * data;
-    FILE * file;
-
-    // open texture data
-    file = fopen( filename, "rb" );
-    if ( file == NULL ) return 0;
-
-    // allocate buffer
-    width = 256;
-    height = 256;
-    data = (char *) malloc( width * height * 3 );
-
-    // read texture data
-    fread( data, width * height * 3, 1, file );
-    fclose( file );
-
-    // allocate a texture name
-    glGenTextures( 1, &texture );
-
-    // select our current texture
-    glBindTexture( GL_TEXTURE_2D, texture );
-
-    // select modulate to mix texture with color for shading
-    glTexEnvf( GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE );
-
-    // when texture area is small, bilinear filter the closest mipmap
-    glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
-                     GL_LINEAR_MIPMAP_NEAREST );
-    // when texture area is large, bilinear filter the first mipmap
-    glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
-
-    // if wrap is true, the texture wraps over at the edges (repeat)
-    //       ... false, the texture ends at the edges (clamp)
-    glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S,
-                     wrap ? GL_REPEAT : GL_CLAMP );
-    glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T,
-                     wrap ? GL_REPEAT : GL_CLAMP );
-
-    // build our texture mipmaps
-    gluBuild2DMipmaps( GL_TEXTURE_2D, 3, width, height,
-                       GL_RGB, GL_UNSIGNED_BYTE, data );
-
-    // free buffer
-    free( data );
-
-    return texture;
 }

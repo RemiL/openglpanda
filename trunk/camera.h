@@ -1,16 +1,7 @@
 #ifndef __camera_h__
 #define __camera_h__
 
-#include <windows.h>
-
-#include <GL/gl.h>
-#include <GL/glu.h>
-#include <GL/glut.h>
-
-#define true 1
-#define false 0
-
-#define PI 3.1415926535898
+#include "common.h"
 
 // Définition des structures de données
 typedef struct
