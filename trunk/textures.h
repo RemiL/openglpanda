@@ -3,6 +3,6 @@
 
 #include "common.h"
 
-GLuint LoadTextureRAW(const char * filename, int wrap);
+GLuint LoadTextureRAW(const char * filename, int wrap, int width, int height);
 
 #endif /* __textures_h__ */
