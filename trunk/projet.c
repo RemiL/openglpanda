@@ -1,7 +1,6 @@
 /*****************************************************************************
 MON PANDA
 
-
 par
 
 Rémi LACROIX et Nicolas POIRIER
@@ -16,6 +15,8 @@ Rémi LACROIX et Nicolas POIRIER
 #include <stdlib.h>
 #include <math.h>
 #include <time.h>
+
+#include "bambou.h"
 
 #define windowWidth 600
 #define windowHeight 600
@@ -54,28 +55,21 @@ int isKeyDown = 0;
 int isKeyRight = 0;
 int isKeyLeft = 0;
 
-int  Ma_Tete;
-int  Ma_Tache;
-int  Mon_Oeil;
-int  Ma_Pupille;
-int  Mon_Oreille;
-int  Mon_Tronc;
-int  Mon_Museau;
-int  Mon_Nez;
-int  Mon_AvantBras;
-int  Ma_Cuisse;
-int  Mon_Mollet;
-int  Mon_Morceau_Bambou;
-#define NB_BAMBOUS 20
-int  Mes_Bambous[NB_BAMBOUS];
-int  Mon_Morceau_Bambou2;
-int  Ma_Feuille;
-int  Ma_Branche;
-int  Ma_Branche_Feuille;
-int  Ma_Foret;
-int  Mon_Corps;
-int  Ma_Cuisse;
-int  Mon_Mollet;
+GLuint  Ma_Tete;
+GLuint  Ma_Tache;
+GLuint  Mon_Oeil;
+GLuint  Ma_Pupille;
+GLuint  Mon_Oreille;
+GLuint  Mon_Tronc;
+GLuint  Mon_Museau;
+GLuint  Mon_Nez;
+GLuint  Mon_AvantBras;
+GLuint  Ma_Cuisse;
+GLuint  Mon_Mollet;
+GLuint  Mon_Corps;
+GLuint  Ma_Cuisse;
+GLuint  Mon_Mollet;
+GLuint  Ma_Foret;
 
 GLuint texture_herbe;
 
@@ -196,7 +190,6 @@ GLvoid window_mouvements_souris(int x, int y);
 GLvoid window_mouvements_passifs_souris(int x, int y);
 GLvoid window_timer(); 
 void Faire_Composantes();
-void faire_bambou(int liste, int hauteur, int nb_branches);
 void init_camera(double x, double y, double z,
                  double vect_ob_x, double vect_ob_y, double vect_ob_z,
                  double vect_vert_x, double vect_vert_y, double vect_vert_z,
@@ -275,9 +268,9 @@ GLvoid initGL()
   glEnable(GL_LIGHT1);
 
   // propriétés matérielles des objets
-   //glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, mat_ambientanddiffuse);
-   //glMaterialfv(GL_FRONT, GL_SPECULAR, mat_specular);
-   //glMaterialfv(GL_FRONT, GL_SHININESS, mat_shininess);
+  //glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, mat_ambientanddiffuse);
+  //glMaterialfv(GL_FRONT, GL_SPECULAR, mat_specular);
+  //glMaterialfv(GL_FRONT, GL_SHININESS, mat_shininess);
   glShadeModel( GL_SMOOTH );
   glEnable(GL_COLOR_MATERIAL);
 
@@ -758,7 +751,6 @@ GLvoid window_timer()
 
 void Faire_Composantes()
 {
-  int i;
   GLUquadricObj* qobj; /*GLAPIENTRY*/
 
    // allocation d´une description de quadrique
@@ -769,28 +761,20 @@ void Faire_Composantes()
   gluQuadricNormals(qobj, GLU_SMOOTH);
 
   // attribution des indentificateurs de display lists
-  Ma_Tete =  glGenLists(19+NB_BAMBOUS);
+  Ma_Tete = glGenLists(14);
   Ma_Tache = Ma_Tete + 1;
-  Mon_Oeil = Ma_Tete + 2;
-  Ma_Pupille = Ma_Tete + 3;
-  Mon_Oreille = Ma_Tete + 4;
-  Mon_Museau = Ma_Tete + 5;
-  Mon_Nez = Ma_Tete + 6;
-  Mon_Tronc = Ma_Tete + 7;
-  Mon_AvantBras = Ma_Tete + 8;
-  Ma_Cuisse = Ma_Tete + 9;
-  Mon_Mollet = Ma_Tete + 10;
-  Mon_Morceau_Bambou = Ma_Tete + 11;
-  Mon_Morceau_Bambou2 = Ma_Tete + 12;
-  Ma_Feuille = Ma_Tete + 13;
-  Ma_Branche = Ma_Tete + 14;
-  Ma_Branche_Feuille = Ma_Tete + 15;
-  Mon_Corps = Ma_Tete + 16;
-  Ma_Cuisse = Ma_Tete + 17;
-  Mon_Mollet = Ma_Tete + 18;
-  for (i=0; i<NB_BAMBOUS; i++)
-    Mes_Bambous[i] = Mon_Mollet + i + 1;
-  Ma_Foret = Mes_Bambous[NB_BAMBOUS-1] + 1;
+  Mon_Oeil = Ma_Tache + 1;
+  Ma_Pupille = Mon_Oeil + 1;
+  Mon_Oreille = Ma_Pupille + 1;
+  Mon_Museau = Mon_Oreille + 1;
+  Mon_Nez = Mon_Museau + 1;
+  Mon_Tronc = Mon_Nez + 1;
+  Mon_AvantBras = Mon_Tronc + 1;
+  Ma_Cuisse = Mon_AvantBras + 1;
+  Mon_Mollet = Ma_Cuisse + 1;
+  Mon_Corps = Mon_Mollet + 1;
+  Ma_Cuisse = Mon_Corps + 1;
+  Mon_Mollet = Ma_Cuisse + 1;
 
   glNewList(Ma_Tache, GL_COMPILE);
     glColor3f(0.0, 0.0, 0.0);
@@ -826,99 +810,6 @@ void Faire_Composantes()
     glColor3f(0.0, 0.0, 0.0);
     glScalef(0.5, 1, 0.8);
     glutSolidSphere(0.2, 50, 50);
-  glEndList();
-
-  glNewList(Mon_Morceau_Bambou, GL_COMPILE);
-    glColor3f(0.69, 0.79, 0.38);
-    gluCylinder(qobj, 0.2, 0.2, 3, 50, 1);
-    gluDisk(qobj, 0, 0.2, 50, 1);
-    glPushMatrix();
-      glTranslatef(0, 0, 3);
-      gluDisk(qobj, 0, 0.2, 50, 1);
-    glPopMatrix();
-  glEndList();
-
-  glNewList(Mon_Morceau_Bambou2, GL_COMPILE);
-    glColor3f(0.79, 0.89, 0.48);
-    gluCylinder(qobj, 0.21, 0.21, 0.14, 50, 1);
-    gluDisk(qobj, 0, 0.21, 50, 1);
-    glTranslatef(0, 0, 0.14);
-    gluDisk(qobj, 0, 0.21, 50, 1);
-  glEndList();
-
-  glNewList(Ma_Feuille, GL_COMPILE);
-    glColor3f(0.32, 0.50, 0.07);
-    glBegin(GL_POLYGON);
-      glVertex3f(0.0, 0.0, 0.0);
-      glVertex3f(-0.15, 0.0, 0.25);
-      glVertex3f(-0.3, 0.0, 0.5);
-      glVertex3f(-0.0, 0.0, 3.0);
-      glVertex3f(0.3, 0.0, 0.5);
-      glVertex3f(0.15, 0.0, 0.25);
-    glEnd();
-  glEndList();
-
-  glNewList(Ma_Branche, GL_COMPILE);
-    glColor3f(0.69, 0.79, 0.38);
-    gluCylinder(qobj, 0.04, 0.04, 5, 50, 1);
-    gluDisk(qobj, 0, 0.04, 50, 1);
-    glPushMatrix();
-      glTranslatef(0, 0, 5);
-      gluDisk(qobj, 0, 0.04, 50, 1);
-    glPopMatrix();
-    glPushMatrix();
-      glTranslatef(0, 0, 1.2);
-      glRotatef(20, 1, 0, 0);
-      glCallList(Ma_Feuille);
-    glPopMatrix();
-    glPushMatrix();
-      glTranslatef(0, 0, 3.4);
-      glRotatef(-20, 1, 0, 0);   
-      glCallList(Ma_Feuille);
-    glPopMatrix();
-  glEndList();
-
-  glNewList(Ma_Branche_Feuille, GL_COMPILE);
-    glPushMatrix();
-      glColor3f(0.69, 0.79, 0.38);
-      gluCylinder(qobj, 0.04, 0.04, 5, 50, 1);
-      gluDisk(qobj, 0, 0.04, 50, 1);
-      glPushMatrix();
-        glTranslatef(0, 0, 5);
-        gluDisk(qobj, 0, 0, 50, 1);
-      glPopMatrix();
-    glPopMatrix();
-    glTranslatef(0, 0, 1);
-    glPushMatrix();
-      glTranslatef(0, 0, 1.2);
-      glRotatef(20, 1, 0, 0);
-      glCallList(Ma_Feuille);
-    glPopMatrix();
-    glPushMatrix();
-      glTranslatef(0, 0, 3);
-      glRotatef(20, 1, 0, 0);
-      glCallList(Ma_Feuille);
-    glPopMatrix();
-    glPushMatrix();
-      glTranslatef(0, 0, 4);
-      glRotatef(10, 1, 0, 0);
-      glCallList(Ma_Feuille);
-    glPopMatrix();
-    glPushMatrix();
-      glTranslatef(0, 0, 2.5);
-      glRotatef(-20, 1, 0, 0);
-      glCallList(Ma_Feuille);
-    glPopMatrix();
-    glPushMatrix();
-      glTranslatef(0, 0, 3.6);
-      glRotatef(-20, 1, 0, 0);
-      glCallList(Ma_Feuille);
-    glPopMatrix();
-    glPushMatrix();
-      glTranslatef(0, -0.03, 4);
-      glRotatef(-10, 1, 0, 0);
-      glCallList(Ma_Feuille);
-    glPopMatrix();
   glEndList();
 
   glNewList(Mon_Corps, GL_COMPILE);
@@ -1011,69 +902,8 @@ void Faire_Composantes()
       glCallList(Mon_Nez);
     glPopMatrix();
   glEndList();
-  
-  for (i=0; i<NB_BAMBOUS; i++)
-    faire_bambou(Mes_Bambous[i], nb_aleatoire(7,12), nb_aleatoire(7,12)*1.7);
 
-  glNewList(Ma_Foret, GL_COMPILE);
-    for (i=0; i<3*NB_BAMBOUS; i++)
-    {
-      glPushMatrix();
-        glTranslatef((i/10)*17+nb_aleatoire(-2,10), (i%10)*17+nb_aleatoire(-2,10), 0);
-        glCallList(Mes_Bambous[nb_aleatoire(0,NB_BAMBOUS-1)]);
-      glPopMatrix();
-    }
-  glEndList();
-}
-
-void faire_bambou(int liste, int hauteur, int nb_branches)
-{
-  int i;
-  
-  //Bambou
-  glNewList(liste, GL_COMPILE);
-  glPushMatrix();
-    glPushMatrix();
-      glTranslatef(0.0, 0.0, -5.0);
-      glCallList(Mon_Morceau_Bambou);
-      for(i=0; i<hauteur; i++)
-      {
-        glTranslatef(0.0, 0.0, 3.0);
-        glCallList(Mon_Morceau_Bambou2);
-        glCallList(Mon_Morceau_Bambou);
-      }
-      glTranslatef(0.0, 0.0, 3.0);
-      glCallList(Mon_Morceau_Bambou2);
-    glPopMatrix();
-
-    glTranslatef(0.0, 0.0, 3.0);
-    for(i=0; i<nb_branches; i++)
-    {
-      glTranslatef(0.0, 0.0, 3.0*hauteur/nb_branches);
-
-      glPushMatrix();
-        glRotatef(120*(i%3 + rand()%11/10.0), 0, 0, 1);
-        glTranslatef(0, 0, -9);
-        glRotatef(10, 1, 0, 0);
-        glCallList(Ma_Branche);
-        
-        glPushMatrix();
-          glTranslatef(0, 0, 5);
-          glRotatef(10, 1, 0, 0);
-          glCallList(Ma_Branche_Feuille);
-        glPopMatrix();
-        glPushMatrix();
-          glTranslatef(0, 0, 5);
-          glRotatef(20, 1, 0, 0);
-          glRotatef(30, 0, 1, 0);
-          glRotatef(90, 0, 0, 1);
-          glCallList(Ma_Branche_Feuille);
-        glPopMatrix();
-        
-      glPopMatrix();
-    }
-  glPopMatrix();
-  glEndList();
+  Ma_Foret = faire_foret_bambous(60, 20);
 }
 
 void dessiner_decor()
