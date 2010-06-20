@@ -47,7 +47,7 @@ void camera_activer_mode_fps(int active)
   }
 }
 
-void camera_centrer_pointeur()
+void camera_centrer_pointeur(int value)
 {
   glutWarpPointer(window_width/2, window_height/2);
 

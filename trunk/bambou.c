@@ -118,7 +118,7 @@ void faire_composantes_bambou()
   glEndList();
 }
 
-void faire_bambou(int liste, int hauteur, int nb_branches)
+void faire_bambou(GLuint liste, int hauteur, int nb_branches)
 {
   int i;
   
