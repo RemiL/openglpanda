@@ -6,13 +6,6 @@
 // Définition des structures de données
 typedef struct
 {
-  double x;
-  double y;
-  double z;
-} t_coordonnees;
-
-typedef struct
-{
   t_coordonnees position;
   t_coordonnees vecteur_observation;
   t_coordonnees vecteur_def_vertical;
