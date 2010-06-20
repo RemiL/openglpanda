@@ -33,9 +33,7 @@ float K = 0.001f;
 int IdleRunning = false;
 int TraceEcran = false;
 int RangFichierStockage = 0;
-float position = position_Ini;
-float positionCote = positionCote_Ini;
-float dzArret;
+t_panda panda;
 
 // Permet de savoir les touches directionnelles apuyées
 int isKeyUp = 0;
@@ -213,7 +211,7 @@ GLvoid initGL()
   glEnable(GL_COLOR_MATERIAL);
 
   // initialisation du fond
-  glClearColor(RED, GREEN, BLUE, ALPHA);        
+  glClearColor(RED, GREEN, BLUE, ALPHA);
   // z-buffer
   glEnable(GL_DEPTH_TEST);
 
@@ -228,7 +226,15 @@ void init_scene()
 
   // Initialisation camera
   init_camera(30, 0, 5, -1, 0, 0, 0, 0, 1, 1);
-
+  
+  // Initialisation Panda
+  panda.position.x = position_Ini;
+  panda.position.y = positionCote_Ini;
+  panda.position.z = 0;
+  panda.direction.x = 1;
+  panda.direction.y = 0;
+  panda.direction.z = 0;
+  
   etatMarche[Droit] = ArriereAvance;
   etatMarche[Gauche] = Recule;
 
@@ -259,7 +265,6 @@ void init_scene()
 }
 
 // fonction de call-back pour l´affichage dans la fenêtre
-
 GLvoid window_display()
 {
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -348,7 +353,8 @@ GLvoid window_up_key(unsigned char key, int x, int y)
         isKeyDown = 0;
         isKeyRight = 0;
         isKeyLeft = 0;
-        // Mettre la camera sur la tete du panda !!!!!!!!!!!!!!!
+        // Déplacement de la caméra
+        init_camera(panda.position.x-16, panda.position.y, panda.position.z+10, panda.direction.x, panda.direction.y, -0.20, 0, 0, 1, 1);
       }
       else
       {
@@ -377,33 +383,21 @@ GLvoid window_special_key(int key, int x, int y)
       printf("GLUT_KEY_UP\n");
       isKeyUp = 1;
       isKeyDown = 0;
-      // DEPLACEMENT DE LA CAMERA AVEC LE PANDA
-      //addition_vectorielle(&camera.position, 1, camera.position, K, camera.vecteur_observation);
-      glutPostRedisplay();
       break;
     case GLUT_KEY_DOWN:
       printf("GLUT_KEY_DOWN\n");
       isKeyDown = 1;
       isKeyUp = 0;
-      // DEPLACEMENT DE LA CAMERA AVEC LE PANDA
-      //addition_vectorielle(&camera.position, 1, camera.position, -K, camera.vecteur_observation);
-      glutPostRedisplay();
       break;
     case GLUT_KEY_RIGHT:
       printf("GLUT_KEY_LEFT\n");
       isKeyRight = 1;
       isKeyLeft = 0;
-      // DEPLACEMENT DE LA CAMERA AVEC LE PANDA
-      //addition_vectorielle(&camera.position, 1, camera.position, K, camera.vecteur_normal);
-      glutPostRedisplay();
       break;
     case GLUT_KEY_LEFT:
       printf("GLUT_KEY_RIGHT\n");
       isKeyLeft = 1;
       isKeyRight = 0;
-      // DEPLACEMENT DE LA CAMERA AVEC LE PANDA
-      //addition_vectorielle(&camera.position, 1, camera.position, -K, camera.vecteur_normal);
-      glutPostRedisplay();
       break;
     default:
       printf ("La touche %d n´est pas active.\n", key);
@@ -419,22 +413,18 @@ GLvoid window_special_up_key(int key, int x, int y)
     case GLUT_KEY_UP:
       printf("GLUT_KEY_UP_UP\n");
       isKeyUp = 0;
-      glutPostRedisplay();
       break;
     case GLUT_KEY_DOWN:
       printf("GLUT_KEY_DOWN_UP\n");
       isKeyDown = 0;
-      glutPostRedisplay();
       break;
     case GLUT_KEY_RIGHT:
       printf("GLUT_KEY_LEFT_UP\n");
       isKeyRight = 0;
-      glutPostRedisplay();
       break;
     case GLUT_KEY_LEFT:
       printf("GLUT_KEY_RIGHT_UP\n");
       isKeyLeft = 0;
-      glutPostRedisplay();
       break;
     default:
       printf ("La touche %d n´est pas active.\n", key);
@@ -489,11 +479,15 @@ GLvoid window_timer()
     {
       t += delta*allure;
       tPosition += delta*allure;
+      // DEPLACEMENT DE LA CAMERA AVEC LE PANDA
+      addition_vectorielle(&camera.position, 1, camera.position, K*delta*allure, panda.direction);
     }
     else if(isKeyDown)
     {
       t += delta;
       tPosition -= delta;
+      // DEPLACEMENT DE LA CAMERA AVEC LE PANDA
+      addition_vectorielle(&camera.position, 1, camera.position, -K*delta*allure, panda.direction);
     }
 
     if(isKeyRight)
@@ -501,12 +495,16 @@ GLvoid window_timer()
       if(!isKeyUp && !isKeyDown)
         t += delta;
       tCote -= delta;
+      // DEPLACEMENT DE LA CAMERA AVEC LE PANDA
+      addition_vectorielle(&camera.position, 1, camera.position, K*delta*allure, camera.vecteur_normal);
     }
     else if(isKeyLeft)
     {
       if(!isKeyUp && !isKeyDown)
         t += delta;
       tCote += delta;
+      // DEPLACEMENT DE LA CAMERA AVEC LE PANDA
+      addition_vectorielle(&camera.position, 1, camera.position, -K*delta*allure, camera.vecteur_normal);
     }
 
     if(allure < Pas)
@@ -531,7 +529,7 @@ GLvoid window_timer()
     }
     else if(isKeyLeft)
     {
-      addition_vectorielle(&camera.position, 1, camera.position, -camera.pas, camera.vecteur_normal);  
+      addition_vectorielle(&camera.position, 1, camera.position, -camera.pas, camera.vecteur_normal);
     }
 
     if(mode == Spectateur && allure > Arret)
@@ -547,7 +545,7 @@ GLvoid window_timer()
   // Si on est a l'arrêt
   if((mode == Panda && !isKeyUp && !isKeyDown && !isKeyRight && !isKeyLeft))
   {
-    dzArret = 0;
+    panda.position.z = 0;
     angle_Corps_Arret = 0;
     angle_Tete_Arret = 0;
 
@@ -568,7 +566,7 @@ GLvoid window_timer()
   // Si on est au pas
   else if(allure == Pas)
   {
-    dzArret = 0;
+    panda.position.z = 0;
     angle_Corps_Arret = 0;
     angle_Tete_Arret = 0;
 
@@ -588,7 +586,7 @@ GLvoid window_timer()
   // Si on est au trot
   else if(allure == Trot)
   {
-    dzArret = 0;
+    panda.position.z = 0;
     angle_Corps_Arret = 0;
     angle_Tete_Arret = 0;
 
@@ -608,7 +606,7 @@ GLvoid window_timer()
   // Si on est au galop
   else if(allure == Galop)
   {
-    dzArret = 0;
+    panda.position.z = 0;
     angle_Corps_Arret = 0;
     angle_Tete_Arret = 0;
 
@@ -675,12 +673,12 @@ GLvoid window_timer()
     }
 
     t += 0.1;
-    dzArret = 1.3;
+    panda.position.z = 1.3;
   }
 
   // On déplace la position de l'avatar pour qu'il avance
-  position = position_Ini + K*tPosition;
-  positionCote = positionCote_Ini + K*tCote;
+  panda.position.x = position_Ini + K*tPosition;
+  panda.position.y = positionCote_Ini + K*tCote;
   
   if (!IdleRunning)
     glutTimerFunc(latence,&window_timer,++Step);
@@ -759,7 +757,7 @@ void dessiner_panda()
     // déplacement horizontal selon l´axe Ox pour donner 
     // une impression de déplacement horizontal accompagnant
     // la marche
-    glTranslatef(position, positionCote, 3.7+dzArret);
+  glTranslatef(panda.position.x, panda.position.y, 3.7+panda.position.z);
     glScalef(0.5, 0.5, 0.5);
     glRotatef(angle_Corps_Arret, 0, 1, 0);
     glPushMatrix();
@@ -830,7 +828,7 @@ void render_scene()
   dessiner_panda();
 
   dessiner_decor();
-
+  
   // permutation des buffers lorsque le tracé est achevé
   glutSwapBuffers();
 }

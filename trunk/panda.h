@@ -3,6 +3,12 @@
 
 #include "common.h"
 
+typedef struct
+{
+  t_coordonnees position;
+  t_coordonnees direction;
+} t_panda;
+
 GLuint faire_tete_panda();
 GLuint faire_corps_panda();
 GLuint faire_cuisse_panda();

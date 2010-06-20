@@ -17,6 +17,13 @@
 
 #define PI 3.1415926535898
 
+typedef struct
+{
+  double x;
+  double y;
+  double z;
+} t_coordonnees;
+
 int nb_aleatoire(int min, int max);
 
 #endif /* __common_h__ */
