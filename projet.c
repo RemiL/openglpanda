@@ -7,9 +7,10 @@ Rémi LACROIX et Nicolas POIRIER
 ******************************************************************************/
 #include "common.h"
 
+#include "textures.h"
+#include "camera.h"
 #include "bambou.h"
 #include "panda.h"
-#include "camera.h"
 
 #define windowWidth 600
 #define windowHeight 600
@@ -127,7 +128,7 @@ void dessiner_panda();
 void render_scene();
 void init_angles();
 GLvoid initGL();
-GLvoid window_display();
+GLvoid window_display(void);
 GLvoid window_reshape(GLsizei width, GLsizei height); 
 GLvoid window_key(unsigned char key, int x, int y);
 GLvoid window_up_key(unsigned char key, int x, int y);
@@ -136,7 +137,7 @@ GLvoid window_special_up_key(int key, int x, int y);
 GLvoid window_cliques_souris(int button, int state, int x, int y);
 GLvoid window_mouvements_souris(int x, int y);
 GLvoid window_mouvements_passifs_souris(int x, int y);
-GLvoid window_timer(); 
+GLvoid window_timer(int value); 
 void Faire_Composantes();
 
 int main(int argc, char **argv) 
@@ -265,7 +266,7 @@ void init_scene()
 }
 
 // fonction de call-back pour l´affichage dans la fenêtre
-GLvoid window_display()
+GLvoid window_display(void)
 {
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   glLoadIdentity();
@@ -469,8 +470,7 @@ GLvoid window_mouvements_passifs_souris(int x, int y)
 }
 
 // fonction de call-back appelée régulièrement
-
-GLvoid window_timer() 
+GLvoid window_timer(int value) 
 {
   // On met à jour les variables en fonction de des touches appuyées
   if(mode == Panda)
