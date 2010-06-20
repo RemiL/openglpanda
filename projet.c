@@ -11,6 +11,7 @@ Rémi LACROIX et Nicolas POIRIER
 #include "camera.h"
 #include "bambou.h"
 #include "panda.h"
+#include "heightmap.h"
 
 #define windowWidth 600
 #define windowHeight 600
@@ -24,6 +25,9 @@ Rémi LACROIX et Nicolas POIRIER
 
 #define position_Ini -60.0
 #define positionCote_Ini 0.0
+
+BYTE g_HeightMap[MAP_SIZE*MAP_SIZE];				// Holds The Height Map Data ( NEW )
+float scaleValue = 0.15f;					// Scale Value For The Terrain ( NEW )
 
 float t = 0.f;
 float tPosition = 0.f;
@@ -111,6 +115,7 @@ static GLfloat specular_light0[] = { 0.1 , 0.1 , 0.1 , 0.1 };
 static GLfloat ambient_light1[] = { 0.50 , 0.50 , 0.50 , 1.0 };
 static GLfloat diffuse_light1[] = { 0.5 , 1.0 , 1.0 , 1.0 };
 static GLfloat specular_light1[] = { 0.5 , 1.0 , 1.0 , 1.0 };
+
 
 int window_width, window_height;
 
@@ -218,6 +223,8 @@ GLvoid initGL()
 
   texture_herbe = LoadTextureRAW("herbe.raw", 1, 256, 256);
   texture_ciel  = LoadTextureRAW("ciel.raw", 1, 2048, 1024);
+
+  LoadRawFile("Terrain.raw", MAP_SIZE * MAP_SIZE, g_HeightMap);
 }
   
 void init_scene()
@@ -829,6 +836,9 @@ void render_scene()
 
   dessiner_decor();
   
+  glScalef(scaleValue, scaleValue * HEIGHT_RATIO, scaleValue);
+  RenderHeightMap(g_HeightMap);				// Render The Height Map
+
   // permutation des buffers lorsque le tracé est achevé
   glutSwapBuffers();
 }
