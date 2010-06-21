@@ -168,9 +168,9 @@ void faire_bambou(GLuint liste, int hauteur, int nb_branches)
   glEndList();
 }
 
-int faire_foret_bambous(int nb_bambous, int nb_varietes)
+int faire_foret_bambous(int nb_bambous, int nb_varietes, char* pHeightMap)
 {
-  int i;
+  int i, x, y;
   GLuint foret;
   
   faire_composantes_bambou();
@@ -189,7 +189,10 @@ int faire_foret_bambous(int nb_bambous, int nb_varietes)
     for (i=0; i<nb_bambous; i++)
     {
       glPushMatrix();
-        glTranslatef((i/10)*17+nb_aleatoire(-2,10), (i%10)*17+nb_aleatoire(-2,10), 0);
+        x = (i/10)*17+nb_aleatoire(-2,10);
+        y = (i%10)*17+nb_aleatoire(-2,10);
+        // IL FAUT TROUVER LA BONNE VALEUR
+        glTranslatef(x, y, Height(pHeightMap, x, y)+3);
         glCallList(Mes_Bambous[nb_aleatoire(0,nb_varietes-1)]);
       glPopMatrix();
     }

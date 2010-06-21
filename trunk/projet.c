@@ -712,7 +712,7 @@ void Faire_Composantes()
   Mon_Mollet = faire_mollet_panda();
   
   // Décor
-  Ma_Foret = faire_foret_bambous(60, 20);
+  Ma_Foret = faire_foret_bambous(60, 20, g_HeightMap);
 
   Mon_Sol = glGenLists(2);
   Mon_Ciel = Mon_Sol + 1;
@@ -751,10 +751,15 @@ void dessiner_decor()
 {
   glPushMatrix();
     glCallList(Mon_Sol);
-    glCallList(Mon_Ciel);
-    
+
     glTranslatef(0, 0, 5);
     glCallList(Ma_Foret);
+    glPushMatrix();
+      //glScalef(scaleValue, scaleValue * HEIGHT_RATIO, scaleValue);
+      RenderHeightMap(g_HeightMap);				// Render The Height Map
+    glPopMatrix();
+
+    glCallList(Mon_Ciel);
   glPopMatrix();
 }
 
@@ -835,9 +840,6 @@ void render_scene()
   dessiner_panda();
 
   dessiner_decor();
-  
-  glScalef(scaleValue, scaleValue * HEIGHT_RATIO, scaleValue);
-  RenderHeightMap(g_HeightMap);				// Render The Height Map
 
   // permutation des buffers lorsque le tracé est achevé
   glutSwapBuffers();

@@ -1,7 +1,8 @@
 #ifndef __heightmap_h__
 #define __heightmap_h__
 
-#include <stdio.h>	
+#include <stdio.h>
+#include "textures.h"
 
 #define		MAP_SIZE	1024				// Size Of Our .RAW Height Map ( NEW )
 #define		STEP_SIZE	16				// Width And Height Of Each Quad ( NEW )
