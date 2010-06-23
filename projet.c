@@ -72,6 +72,8 @@ int mode = Spectateur;
 enum etats{ArriereAvance = 0, AvantAvance = 1, Recule = 2};
 int etatMarche[2] = {Recule, AvantAvance};
 
+float angleTourne;
+
 float angle_Bras[2];
 float angle_AvantBras[2];
 float angle_Cuisse[2];
@@ -224,7 +226,7 @@ GLvoid initGL()
   texture_herbe = LoadTextureRAW("herbe.raw", 1, 256, 256);
   texture_ciel  = LoadTextureRAW("ciel.raw", 1, 2048, 1024);
 
-  LoadRawFile("Terrain.raw", MAP_SIZE * MAP_SIZE, g_HeightMap);
+  LoadRawFile("Terrain1.raw", MAP_SIZE * MAP_SIZE, g_HeightMap);
 }
   
 void init_scene()
@@ -482,6 +484,7 @@ GLvoid window_timer(int value)
   // On met à jour les variables en fonction de des touches appuyées
   if(mode == Panda)
   {
+    angleTourne = -180 * camera.angle_h / PI;
     if(isKeyUp)
     {
       t += delta*allure;
@@ -717,7 +720,7 @@ void Faire_Composantes()
   Mon_Sol = glGenLists(2);
   Mon_Ciel = Mon_Sol + 1;
   
-  glNewList(Mon_Sol, GL_COMPILE);
+ /* glNewList(Mon_Sol, GL_COMPILE);
     glPushMatrix();
       glEnable(GL_TEXTURE_2D);
       glBindTexture(GL_TEXTURE_2D, texture_herbe);
@@ -733,6 +736,12 @@ void Faire_Composantes()
         glVertex2i(-taille, taille);
       glEnd();
       glDisable(GL_TEXTURE_2D);
+    glPopMatrix();
+  glEndList();*/
+
+  glNewList(Mon_Sol, GL_COMPILE);
+    glPushMatrix();
+      RenderHeightMap(g_HeightMap);
     glPopMatrix();
   glEndList();
   
@@ -750,15 +759,8 @@ void Faire_Composantes()
 void dessiner_decor()
 {
   glPushMatrix();
-    glCallList(Mon_Sol);
-
-    glTranslatef(0, 0, 5);
     glCallList(Ma_Foret);
-    glPushMatrix();
-      //glScalef(scaleValue, scaleValue * HEIGHT_RATIO, scaleValue);
-      RenderHeightMap(g_HeightMap);				// Render The Height Map
-    glPopMatrix();
-
+    glCallList(Mon_Sol);
     glCallList(Mon_Ciel);
   glPopMatrix();
 }
@@ -769,7 +771,8 @@ void dessiner_panda()
     // déplacement horizontal selon l´axe Ox pour donner 
     // une impression de déplacement horizontal accompagnant
     // la marche
-  glTranslatef(panda.position.x, panda.position.y, 3.7+panda.position.z);
+    glRotatef(angleTourne, 0, 0, 1);
+    glTranslatef(panda.position.x, panda.position.y, 3.7+panda.position.z);
     glScalef(0.5, 0.5, 0.5);
     glRotatef(angle_Corps_Arret, 0, 1, 0);
     glPushMatrix();
@@ -838,7 +841,6 @@ void dessiner_panda()
 void render_scene()
 {
   dessiner_panda();
-
   dessiner_decor();
 
   // permutation des buffers lorsque le tracé est achevé

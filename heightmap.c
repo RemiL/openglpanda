@@ -27,8 +27,8 @@ void LoadRawFile(char* strName, int nSize, char *pHeightMap)
 
 int Height(char *pHeightMap, int X, int Y)			// This Returns The Height From A Height Map Index
 {
-	int x = X % MAP_SIZE;					// Error Check Our x Value
-	int y = Y % MAP_SIZE;					// Error Check Our y Value
+	int x = (X + MAP_SIZE/2) % MAP_SIZE;					// Error Check Our x Value
+	int y = (Y + MAP_SIZE/2) % MAP_SIZE;					// Error Check Our y Value
 
 	if(!pHeightMap) return 0;				// Make Sure Our Data Is Valid
 
@@ -58,71 +58,71 @@ void SetVertexColor(char *pHeightMap, int x, int y)		// This Sets The Color Valu
 void RenderHeightMap(char pHeightMap[])				// This Renders The Height Map As Quads
 {
 	int X = 0, Y = 0;					// Create Some Variables To Walk The Array With.
-	int x, y, z;						// Create Some Variables For Readability
+	int x, y, z;				// Create Some Variables For Readability
 
   texture_herbe = LoadTextureRAW("herbe.raw", 1, 256, 256);
 
-  glEnable(GL_TEXTURE_2D);
   glPushMatrix();
-  glBindTexture(GL_TEXTURE_2D, texture_herbe);
+    glEnable(GL_TEXTURE_2D);
+    glBindTexture(GL_TEXTURE_2D, texture_herbe);
 
-	if(!pHeightMap) return;					// Make Sure Our Height Data Is Valid
-  if(bRender)						// What We Want To Render
-		glBegin(GL_QUADS);				// Render Polygons
-	else 
-		glBegin(GL_LINES);				// Render Lines Instead
-  
-  for ( X = 0; X < (MAP_SIZE-STEP_SIZE); X += STEP_SIZE )
-  {
-		for ( Y = 0; Y < (MAP_SIZE-STEP_SIZE); Y += STEP_SIZE )
-		{
-			// Get The (X, Y, Z) Value For The Bottom Left Vertex
-			x = X;							
-			y = Y;	
-			z = Height(pHeightMap, X, Y );							
+	  if(!pHeightMap) return;					// Make Sure Our Height Data Is Valid
+    if(bRender)						// What We Want To Render
+		  glBegin(GL_QUADS);				// Render Polygons
+	  else 
+		  glBegin(GL_LINES);				// Render Lines Instead
+    
+    for ( X = -MAP_SIZE; X < (MAP_SIZE/2-STEP_SIZE); X += STEP_SIZE )
+    {
+		  for ( Y = -MAP_SIZE/2; Y < (MAP_SIZE/2-STEP_SIZE); Y += STEP_SIZE )
+		  {
+			  // Get The (X, Y, Z) Value For The Bottom Left Vertex
+			  x = X;							
+			  y = Y;	
+			  z = Height(pHeightMap, X, Y );							
 
-			// Set The Color Value Of The Current Vertex
-			SetVertexColor(pHeightMap, x, y);
-      
-      glTexCoord2i(0, 0);
-			glVertex3i(x, y, z);			// Send This Vertex To OpenGL To Be Rendered
+			  // Set The Color Value Of The Current Vertex
+			  SetVertexColor(pHeightMap, x, y);
+        
+        glTexCoord2i(0, 0);
+			  glVertex3i(x, y, z);			// Send This Vertex To OpenGL To Be Rendered
 
-			// Get The (X, Y, Z) Value For The Top Left Vertex
-			x = X;										
-			y = Y + STEP_SIZE;
-			z = Height(pHeightMap, X, Y + STEP_SIZE );							
-			
-			// Set The Color Value Of The Current Vertex
-			SetVertexColor(pHeightMap, x, y);
+			  // Get The (X, Y, Z) Value For The Top Left Vertex
+			  x = X;										
+			  y = Y + STEP_SIZE;
+			  z = Height(pHeightMap, X, Y + STEP_SIZE );							
+  			
+			  // Set The Color Value Of The Current Vertex
+			  SetVertexColor(pHeightMap, x, y);
 
-      glTexCoord2i(0, 1);
-			glVertex3i(x, y, z);			// Send This Vertex To OpenGL To Be Rendered
+        glTexCoord2i(0, 1);
+			  glVertex3i(x, y, z);			// Send This Vertex To OpenGL To Be Rendered
 
-			// Get The (X, Y, Z) Value For The Top Right Vertex
-			x = X + STEP_SIZE; 
-			y = Y + STEP_SIZE;
-			z = Height(pHeightMap, X + STEP_SIZE, Y + STEP_SIZE );
+			  // Get The (X, Y, Z) Value For The Top Right Vertex
+			  x = X + STEP_SIZE; 
+			  y = Y + STEP_SIZE;
+			  z = Height(pHeightMap, X + STEP_SIZE, Y + STEP_SIZE );
 
-			// Set The Color Value Of The Current Vertex
-			SetVertexColor(pHeightMap, x, y);
-			
-      glTexCoord2i(1, 1);
-			glVertex3i(x, y, z);			// Send This Vertex To OpenGL To Be Rendered
+			  // Set The Color Value Of The Current Vertex
+			  SetVertexColor(pHeightMap, x, y);
+  			
+        glTexCoord2i(1, 1);
+			  glVertex3i(x, y, z);			// Send This Vertex To OpenGL To Be Rendered
 
-			// Get The (X, Y, Z) Value For The Bottom Right Vertex
-			x = X + STEP_SIZE; 
-			y = Y;
-			z = Height(pHeightMap, X + STEP_SIZE, Y );
+			  // Get The (X, Y, Z) Value For The Bottom Right Vertex
+			  x = X + STEP_SIZE; 
+			  y = Y;
+			  z = Height(pHeightMap, X + STEP_SIZE, Y );
 
-			// Set The Color Value Of The Current Vertex
-			SetVertexColor(pHeightMap, x, y);
+			  // Set The Color Value Of The Current Vertex
+			  SetVertexColor(pHeightMap, x, y);
 
-      glTexCoord2i(1, 0);
-			glVertex3i(x, y, z);			// Send This Vertex To OpenGL To Be Rendered
-		}
-  }
-	glEnd();
+        glTexCoord2i(1, 0);
+			  glVertex3i(x, y, z);			// Send This Vertex To OpenGL To Be Rendered
+		  }
+    }
+	  glEnd();
+    glDisable(GL_TEXTURE_2D);
   glPopMatrix();
-  glDisable(GL_TEXTURE_2D);
   //glColor4f(1.0f, 1.0f, 1.0f, 1.0f);			// Reset The Color
 }
