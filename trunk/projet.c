@@ -341,6 +341,8 @@ GLvoid window_up_key(unsigned char key, int x, int y)
       if(allure < Galop)
       {
         allure++;
+        if(allure == Pas)
+          t = -PI/2.0;
       }
       break; 
     // Diminution de l'allure
@@ -576,22 +578,83 @@ GLvoid window_timer(int value)
   // Si on est au pas
   else if(allure == Pas)
   {
-    panda.position.z = 0;
-    angle_Corps_Arret = 0;
-    angle_Tete_Arret = 0;
+    if(angle_Corps_Arret != 0)
+    {
+      float ampBrasG = -25;
+      float ampAvBrasG = 20;
+      float ampCuisseG = 20;
+      float ampMolletG = 0;
 
-    angle_Bras[ Gauche ] = med_Bras + sin(k*t)*amplitude_Bras;
-    angle_AvantBras[ Gauche ] = med_AvantBras + sin(k*t)*amplitude_AvantBras;
-    angle_Cuisse[ Gauche ] = med_Cuisse + sin(k*t)*amplitude_Cuisse;
-    angle_Mollet[ Gauche ] = med_Mollet + sin(k*t)*amplitude_Mollet;
+      float ampBrasD = -25;
+      float ampAvBrasD = 20;
+      float ampCuisseD = 20;
+      float ampMolletD = 0;
 
-    angle_Bras[ Droit ] = med_Bras - sin(k*t)*amplitude_Bras;
-    angle_AvantBras[ Droit ] = med_AvantBras - sin(k*t)*amplitude_AvantBras;
-    angle_Cuisse[ Droit ] = med_Cuisse - sin(k*t)*amplitude_Cuisse;
-    angle_Mollet[ Droit ] = med_Mollet - sin(k*t)*amplitude_Mollet;
+      float ampTete = -70;
+      float ampCorps = 70;
+      float ampCorpsHauteur = -1.3;
 
-    angle_Corps = med_Corps - sin(k*t)*amplitude_Corps;
-    angle_Tete = med_Tete - sin(k*t)*amplitude_Tete;
+      angle_Corps = 0;
+      angle_Tete = 0;
+
+      t -= delta*allure;
+
+      if(t < 0)
+      {
+        angle_Bras[ Gauche ] = sin(t)*ampBrasG;
+        angle_AvantBras[ Gauche ] = sin(t)*ampAvBrasG;
+        angle_Cuisse[ Gauche ] = sin(t)*ampCuisseG;
+        angle_Mollet[ Gauche ] = sin(t)*ampMolletG;
+
+        angle_Bras[ Droit ] = sin(t)*ampBrasD;
+        angle_AvantBras[ Droit ] = sin(t)*ampAvBrasD;
+        angle_Cuisse[ Droit ] = sin(t)*ampCuisseD;
+        angle_Mollet[ Droit ] = sin(t)*ampMolletD;
+
+        angle_Corps_Arret = sin(t)*ampCorps;
+        angle_Tete_Arret = sin(t)*ampTete;
+
+        panda.position.z = sin(t)*ampCorpsHauteur;
+      }
+      else
+      {
+        angle_Bras[ Gauche ] = 0;
+        angle_AvantBras[ Gauche ] = 0;
+        angle_Cuisse[ Gauche ] = 0;
+        angle_Mollet[ Gauche ] = 0;
+
+        angle_Bras[ Droit ] = 0;
+        angle_AvantBras[ Droit ] = 0;
+        angle_Cuisse[ Droit ] = 0;
+        angle_Mollet[ Droit ] = 0;
+
+        angle_Corps_Arret = 0;
+        angle_Tete_Arret = 0;
+
+        panda.position.z = 0;
+      }
+
+      t += 0.1;
+    }
+    else
+    {
+      panda.position.z = 0;
+      angle_Corps_Arret = 0;
+      angle_Tete_Arret = 0;
+
+      angle_Bras[ Gauche ] = med_Bras + sin(k*t)*amplitude_Bras;
+      angle_AvantBras[ Gauche ] = med_AvantBras + sin(k*t)*amplitude_AvantBras;
+      angle_Cuisse[ Gauche ] = med_Cuisse + sin(k*t)*amplitude_Cuisse;
+      angle_Mollet[ Gauche ] = med_Mollet + sin(k*t)*amplitude_Mollet;
+
+      angle_Bras[ Droit ] = med_Bras - sin(k*t)*amplitude_Bras;
+      angle_AvantBras[ Droit ] = med_AvantBras - sin(k*t)*amplitude_AvantBras;
+      angle_Cuisse[ Droit ] = med_Cuisse - sin(k*t)*amplitude_Cuisse;
+      angle_Mollet[ Droit ] = med_Mollet - sin(k*t)*amplitude_Mollet;
+
+      angle_Corps = med_Corps - sin(k*t)*amplitude_Corps;
+      angle_Tete = med_Tete - sin(k*t)*amplitude_Tete;
+    }
   }
   // Si on est au trot
   else if(allure == Trot)
@@ -635,18 +698,19 @@ GLvoid window_timer(int value)
   }
   else
   {
-    float ampBrasG = 25 - angle_Bras[ Gauche ];
-    float ampAvBrasG = -20 - angle_AvantBras[ Gauche ];
-    float ampCuisseG = -20 - angle_Cuisse[ Gauche ];
-    float ampMolletG = 0 - angle_Mollet[ Gauche ];
+    float ampBrasG = 25;
+    float ampAvBrasG = -20;
+    float ampCuisseG = -20;
+    float ampMolletG = 0;
 
-    float ampBrasD = 25 - angle_Bras[ Droit ];
-    float ampAvBrasD = -20 - angle_AvantBras[ Droit ];
-    float ampCuisseD = -20 - angle_Cuisse[ Droit ];
-    float ampMolletD = 0 - angle_Mollet[ Droit ];
+    float ampBrasD = 25;
+    float ampAvBrasD = -20;
+    float ampCuisseD = -20;
+    float ampMolletD = 0;
 
     float ampTete = 70;
     float ampCorps = -70;
+    float ampCorpsHauteur = 1.4;
 
     angle_Corps = 0;
     angle_Tete = 0;
@@ -665,6 +729,11 @@ GLvoid window_timer(int value)
 
       angle_Corps_Arret = sin(t)*ampCorps;
       angle_Tete_Arret = sin(t)*ampTete;
+
+      if(t < PI/4.0)
+      {
+        panda.position.z = sin(2*t)*ampCorpsHauteur;
+      }
     }
     else
     {
@@ -680,10 +749,11 @@ GLvoid window_timer(int value)
 
       angle_Corps_Arret = -70;
       angle_Tete_Arret = 70;
+
+      panda.position.z = 1.3;
     }
 
     t += 0.1;
-    panda.position.z = 1.3;
   }
 
   // On déplace la position de l'avatar pour qu'il avance
