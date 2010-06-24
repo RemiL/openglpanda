@@ -170,6 +170,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\collisions.c"
+				>
+			</File>
+			<File
 				RelativePath=".\common.c"
 				>
 			</File>
@@ -201,6 +205,10 @@
 			</File>
 			<File
 				RelativePath=".\camera.h"
+				>
+			</File>
+			<File
+				RelativePath=".\collisions.h"
 				>
 			</File>
 			<File

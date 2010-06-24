@@ -59,6 +59,7 @@ GLuint Ma_Foret;
 // Textures
 GLuint texture_herbe;
 GLuint texture_ciel;
+GLuint texture_roche;
 
 enum lateralite{ Gauche = 0, Droit };
 
@@ -226,7 +227,7 @@ GLvoid initGL()
   texture_herbe = LoadTextureRAW("herbe.raw", 1, 256, 256);
   texture_ciel  = LoadTextureRAW("ciel.raw", 1, 2048, 1024);
 
-  LoadRawFile("Terrain1.raw", MAP_SIZE * MAP_SIZE, g_HeightMap);
+  LoadRawFile("Terrain.raw", MAP_SIZE * MAP_SIZE, g_HeightMap);
 }
   
 void init_scene()
