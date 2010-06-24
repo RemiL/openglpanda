@@ -241,9 +241,15 @@ void init_scene()
   panda.position.x = position_Ini;
   panda.position.y = positionCote_Ini;
   panda.position.z = 0;
-  panda.direction.x = 1;
-  panda.direction.y = 0;
-  panda.direction.z = 0;
+  panda.direction_initial.x = panda.direction.x = 1;
+  panda.direction_initial.y = panda.direction.y = 0;
+  panda.direction_initial.z = panda.direction.z = 0;
+  panda.direction_normal_initial.x = panda.direction_normal.x = 0;
+  panda.direction_normal_initial.y = panda.direction_normal.y = -1;
+  panda.direction_normal_initial.z = panda.direction_normal.z = 0;
+  panda.vecteur_def_vertical.x = 0;
+  panda.vecteur_def_vertical.y = 0;
+  panda.vecteur_def_vertical.z = 1;
   
   etatMarche[Droit] = ArriereAvance;
   etatMarche[Gauche] = Recule;
@@ -281,16 +287,31 @@ GLvoid window_display(void)
   glLoadIdentity();
 
   // Positionnement caméra
-  gluLookAt(camera.position.x,
-            camera.position.y,
-            camera.position.z,
-            camera.position.x + camera.vecteur_observation.x,
-            camera.position.y + camera.vecteur_observation.y,
-            camera.position.z + camera.vecteur_observation.z,
-            camera.vecteur_def_vertical.x,
-            camera.vecteur_def_vertical.y,
-            camera.vecteur_def_vertical.z);
-  
+  if (mode == Panda)
+  {
+    gluLookAt(panda.position.x - 16*cos(panda.angle),
+              panda.position.y + 16*sin(panda.angle),
+              panda.position.z + 10,
+              panda.position.x - 16*cos(panda.angle) + panda.direction.x,
+              panda.position.y + 16*sin(panda.angle) + panda.direction.y,
+              panda.position.z + 9.75,
+              panda.vecteur_def_vertical.x,
+              panda.vecteur_def_vertical.y,
+              panda.vecteur_def_vertical.z);
+  }
+  else
+  {
+      gluLookAt(camera.position.x,
+                camera.position.y,
+                camera.position.z,
+                camera.position.x + camera.vecteur_observation.x,
+                camera.position.y + camera.vecteur_observation.y,
+                camera.position.z + camera.vecteur_observation.z,
+                camera.vecteur_def_vertical.x,
+                camera.vecteur_def_vertical.y,
+                camera.vecteur_def_vertical.z);
+  }
+
   // Tracé de la scène
   render_scene();
 
@@ -365,8 +386,6 @@ GLvoid window_up_key(unsigned char key, int x, int y)
         isKeyDown = 0;
         isKeyRight = 0;
         isKeyLeft = 0;
-        // Déplacement de la caméra
-        init_camera(panda.position.x-16, panda.position.y, panda.position.z+10, panda.direction.x, panda.direction.y, -0.20, 0, 0, 1, 1);
       }
       else
       {
@@ -462,22 +481,56 @@ GLvoid window_mouvements_souris(int x, int y)
 {
   if (camera_deplacement_active && !camera.mode_fps)
   {
-    camera.angle_h += (double)(x-position_clique_x) * PI / window_width;
-    camera.angle_v += (double)(y-position_clique_y) * PI / window_height;
+    if (mode == Panda)
+    {
+      panda.angle += (double)(x-position_clique_x) * PI / 2 / window_width;
+      
+      // Rotation par rapport au vecteur définissant la verticale de la caméra
+      addition_vectorielle(&panda.direction,
+                           cos(panda.angle), panda.direction_initial,
+                           sin(panda.angle), panda.direction_normal_initial);
+      // On recalcule le nouveau vecteur normal
+      produit_vectoriel(&panda.direction_normal, panda.direction, panda.vecteur_def_vertical);
+      
+      // On met à jour l'affichage
+      glutPostRedisplay();
+    }
+    else
+    {
+      camera.angle_h += (double)(x-position_clique_x) * PI / window_width;
+      camera.angle_v += (double)(y-position_clique_y) * PI / window_height;
+
+      camera_actualiser_position();
+    }
 
     position_clique_x = x;
     position_clique_y = y;
-
-    camera_actualiser_position();
   }
 }
 
 GLvoid window_mouvements_passifs_souris(int x, int y)
 {
-  camera.angle_h += (double)(x - (window_width/2)) * PI / window_width;
-  camera.angle_v += (double)(y - (window_height/2)) * PI / window_height;
-
-  camera_actualiser_position();
+  if (mode == Panda)
+  {
+    panda.angle += (double)(x - (window_width/2)) * PI / 2 / window_width;
+    
+    // Rotation par rapport au vecteur définissant la verticale de la caméra
+    addition_vectorielle(&panda.direction,
+                         cos(panda.angle), panda.direction_initial,
+                         sin(panda.angle), panda.direction_normal_initial);
+    // On recalcule le nouveau vecteur normal
+    produit_vectoriel(&panda.direction_normal, panda.direction, panda.vecteur_def_vertical);
+    
+    // On met à jour l'affichage
+    glutPostRedisplay();
+  }
+  else
+  {
+    camera.angle_h += (double)(x - (window_width/2)) * PI / window_width;
+    camera.angle_v += (double)(y - (window_height/2)) * PI / window_height;
+    
+    camera_actualiser_position();
+  }
 }
 
 // fonction de call-back appelée régulièrement
@@ -486,11 +539,15 @@ GLvoid window_timer(int value)
   // On met à jour les variables en fonction de des touches appuyées
   if(mode == Panda)
   {
-    angleTourne = -180 * camera.angle_h / PI;
+    angleTourne = -180 * panda.angle / PI;
+    
     if(isKeyUp)
     {
       t += delta*allure;
       tPosition += delta*allure;
+      // On déplace la position de l'avatar pour qu'il avance
+      panda.position.x += K*delta*allure*cos(panda.angle);
+      panda.position.y -= K*delta*allure*sin(panda.angle);
       // DEPLACEMENT DE LA CAMERA AVEC LE PANDA
       addition_vectorielle(&camera.position, 1, camera.position, K*delta*allure, panda.direction);
     }
@@ -498,6 +555,8 @@ GLvoid window_timer(int value)
     {
       t += delta;
       tPosition -= delta;
+      panda.position.x -= K*delta*cos(panda.angle);
+      panda.position.y += K*delta*sin(panda.angle);
       // DEPLACEMENT DE LA CAMERA AVEC LE PANDA
       addition_vectorielle(&camera.position, 1, camera.position, -K*delta, panda.direction);
     }
@@ -507,16 +566,20 @@ GLvoid window_timer(int value)
       if(!isKeyUp && !isKeyDown)
         t += delta;
       tCote -= delta;
+      panda.position.x -= K*delta*sin(panda.angle);
+      panda.position.y -= K*delta*cos(panda.angle);
       // DEPLACEMENT DE LA CAMERA AVEC LE PANDA
-      addition_vectorielle(&camera.position, 1, camera.position, K*delta, camera.vecteur_normal);
+      addition_vectorielle(&camera.position, 1, camera.position, K*delta, panda.direction_normal);
     }
     else if(isKeyLeft)
     {
       if(!isKeyUp && !isKeyDown)
         t += delta;
       tCote += delta;
+      panda.position.x += K*delta*sin(panda.angle);
+      panda.position.y += K*delta*cos(panda.angle);
       // DEPLACEMENT DE LA CAMERA AVEC LE PANDA
-      addition_vectorielle(&camera.position, 1, camera.position, -K*delta, camera.vecteur_normal);
+      addition_vectorielle(&camera.position, 1, camera.position, -K*delta, panda.direction_normal);
     }
 
     if(allure < Pas)
@@ -755,10 +818,7 @@ GLvoid window_timer(int value)
 
     t += 0.1;
   }
-
-  // On déplace la position de l'avatar pour qu'il avance
-  panda.position.x = position_Ini + K*tPosition;
-  panda.position.y = positionCote_Ini + K*tCote;
+  
   
   if (!IdleRunning)
     glutTimerFunc(latence,&window_timer,++Step);
@@ -841,8 +901,8 @@ void dessiner_panda()
     // déplacement horizontal selon l´axe Ox pour donner 
     // une impression de déplacement horizontal accompagnant
     // la marche
-    glRotatef(angleTourne, 0, 0, 1);
     glTranslatef(panda.position.x, panda.position.y, 3.7+panda.position.z);
+    glRotatef(angleTourne, 0, 0, 1);
     glScalef(0.5, 0.5, 0.5);
     glRotatef(angle_Corps_Arret, 0, 1, 0);
     glPushMatrix();
