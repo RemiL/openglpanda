@@ -7,6 +7,11 @@ typedef struct
 {
   t_coordonnees position;
   t_coordonnees direction;
+  t_coordonnees direction_normal;
+  t_coordonnees direction_initial;
+  t_coordonnees direction_normal_initial;
+  t_coordonnees vecteur_def_vertical;
+  double angle;
 } t_panda;
 
 GLuint faire_tete_panda();
