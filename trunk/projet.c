@@ -499,7 +499,7 @@ GLvoid window_timer(int value)
       t += delta;
       tPosition -= delta;
       // DEPLACEMENT DE LA CAMERA AVEC LE PANDA
-      addition_vectorielle(&camera.position, 1, camera.position, -K*delta*allure, panda.direction);
+      addition_vectorielle(&camera.position, 1, camera.position, -K*delta, panda.direction);
     }
 
     if(isKeyRight)
@@ -508,7 +508,7 @@ GLvoid window_timer(int value)
         t += delta;
       tCote -= delta;
       // DEPLACEMENT DE LA CAMERA AVEC LE PANDA
-      addition_vectorielle(&camera.position, 1, camera.position, K*delta*allure, camera.vecteur_normal);
+      addition_vectorielle(&camera.position, 1, camera.position, K*delta, camera.vecteur_normal);
     }
     else if(isKeyLeft)
     {
@@ -516,7 +516,7 @@ GLvoid window_timer(int value)
         t += delta;
       tCote += delta;
       // DEPLACEMENT DE LA CAMERA AVEC LE PANDA
-      addition_vectorielle(&camera.position, 1, camera.position, -K*delta*allure, camera.vecteur_normal);
+      addition_vectorielle(&camera.position, 1, camera.position, -K*delta, camera.vecteur_normal);
     }
 
     if(allure < Pas)
