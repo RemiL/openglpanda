@@ -1,4 +1,6 @@
-#include "bambou.h"
+#include "panda.h"
+
+extern t_panda panda;
 
 GLuint faire_tete_panda()
 {
@@ -158,4 +160,33 @@ GLuint faire_mollet_panda()
   glEndList();
   
   return Mon_Mollet;
+}
+
+void init_panda()
+{
+  panda.position.x = -60;
+  panda.position.y = 0;
+  panda.position.z = 0;
+  panda.direction_initial.x = panda.direction.x = 1;
+  panda.direction_initial.y = panda.direction.y = 0;
+  panda.direction_initial.z = panda.direction.z = 0;
+  panda.direction_normal_initial.x = panda.direction_normal.x = 0;
+  panda.direction_normal_initial.y = panda.direction_normal.y = -1;
+  panda.direction_normal_initial.z = panda.direction_normal.z = 0;
+  panda.vecteur_def_vertical.x = 0;
+  panda.vecteur_def_vertical.y = 0;
+  panda.vecteur_def_vertical.z = 1;
+}
+
+void panda_actualiser_position()
+{
+  // Rotation par rapport au vecteur définissant la verticale de la caméra
+  addition_vectorielle(&panda.direction,
+                       cos(panda.angle), panda.direction_initial,
+                       sin(panda.angle), panda.direction_normal_initial);
+  // On recalcule le nouveau vecteur normal
+  produit_vectoriel(&panda.direction_normal, panda.direction, panda.vecteur_def_vertical);
+  
+  // On met à jour l'affichage
+  glutPostRedisplay();
 }
