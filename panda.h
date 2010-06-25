@@ -18,5 +18,7 @@ GLuint faire_tete_panda();
 GLuint faire_corps_panda();
 GLuint faire_cuisse_panda();
 GLuint faire_mollet_panda();
+void init_panda();
+void panda_actualiser_position();
 
 #endif /* __panda_h__ */
