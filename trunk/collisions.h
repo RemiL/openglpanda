@@ -3,7 +3,8 @@
 
 #include "common.h"
 #include "heightmap.h"
+#include "panda.h"
 
-int collisionTerrain();
+int collisionTerrain(t_panda panda, char pHeightMap[]);
 
 #endif /* __collision_h__ */

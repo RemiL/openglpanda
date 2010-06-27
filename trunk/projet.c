@@ -56,7 +56,7 @@ t_panda panda;
 float t = 0.f;
 float delta = 50.f;
 float k = 0.001f;
-float K = 0.001f;
+float K = 0.05f;
 float angleRotationPanda;
 
 float angle_Bras[2];
@@ -368,6 +368,10 @@ GLvoid window_up_key(unsigned char key, int x, int y)
     case 'f':
       camera_activer_mode_fps(!camera.mode_fps);
       break;
+    // Action devant un bambou
+    case 13:
+      printf("ENTER\n");
+      break;
     default:
       //printf ("La touche %d n´est pas active.\n", key);
       break;
@@ -491,10 +495,13 @@ GLvoid window_timer(int value)
     {
       t += delta*allure;
       // On déplace la position de l'avatar pour qu'il avance
-      panda.position.x += K*delta*allure*cos(panda.angle);
-      panda.position.y -= K*delta*allure*sin(panda.angle);
-      // DEPLACEMENT DE LA CAMERA AVEC LE PANDA
-      addition_vectorielle(&camera.position, 1, camera.position, K*delta*allure, panda.direction);
+      if(!collisionTerrain(panda, g_HeightMap))
+      {
+        panda.position.x += K*delta*allure*cos(panda.angle);
+        panda.position.y -= K*delta*allure*sin(panda.angle);
+        // DEPLACEMENT DE LA CAMERA AVEC LE PANDA
+        addition_vectorielle(&camera.position, 1, camera.position, K*delta*allure, panda.direction);
+      }
     }
     else if(isDownKeyDown)
     {
@@ -551,6 +558,8 @@ GLvoid window_timer(int value)
 
     if(mode == Spectateur && allure > Arret)
     {
+      panda.position.x += K*delta*allure*cos(panda.angle);
+      panda.position.y -= K*delta*allure*sin(panda.angle);
       t += delta*allure;
     }
   }
