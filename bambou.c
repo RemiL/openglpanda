@@ -191,7 +191,6 @@ int faire_foret_bambous(int nb_bambous, int nb_varietes, char* pHeightMap)
       glPushMatrix();
         x = (i/10)*17+nb_aleatoire(-2,10);
         y = (i%10)*17+nb_aleatoire(-2,10);
-        // IL FAUT TROUVER LA BONNE VALEUR
         glTranslatef(x, y, Height(pHeightMap, x, y)+5);
         glCallList(Mes_Bambous[nb_aleatoire(0,nb_varietes-1)]);
       glPopMatrix();
