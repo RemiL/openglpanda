@@ -495,11 +495,11 @@ GLvoid window_timer(int value)
     {
       t += delta*allure;
       // On déplace la position de l'avatar pour qu'il avance
-      if(!collisionTerrain(panda, g_HeightMap))
+      if(!collisionTerrain(panda.box, g_HeightMap))
       {
         panda.position.x += K*delta*allure*cos(panda.angle);
         panda.position.y -= K*delta*allure*sin(panda.angle);
-        // DEPLACEMENT DE LA CAMERA AVEC LE PANDA
+        // Déplacement de la caméra avec le panda
         addition_vectorielle(&camera.position, 1, camera.position, K*delta*allure, panda.direction);
       }
     }
@@ -508,7 +508,7 @@ GLvoid window_timer(int value)
       t += delta;
       panda.position.x -= K*delta*cos(panda.angle);
       panda.position.y += K*delta*sin(panda.angle);
-      // DEPLACEMENT DE LA CAMERA AVEC LE PANDA
+      // Déplacement de la caméra avec le panda
       addition_vectorielle(&camera.position, 1, camera.position, -K*delta, panda.direction);
     }
 
@@ -518,7 +518,7 @@ GLvoid window_timer(int value)
         t += delta;
       panda.position.x -= K*delta*sin(panda.angle);
       panda.position.y -= K*delta*cos(panda.angle);
-      // DEPLACEMENT DE LA CAMERA AVEC LE PANDA
+      // Déplacement de la caméra avec le panda
       addition_vectorielle(&camera.position, 1, camera.position, K*delta, panda.direction_normal);
     }
     else if(isDownKeyLeft)
@@ -527,7 +527,7 @@ GLvoid window_timer(int value)
         t += delta;
       panda.position.x += K*delta*sin(panda.angle);
       panda.position.y += K*delta*cos(panda.angle);
-      // DEPLACEMENT DE LA CAMERA AVEC LE PANDA
+      // Déplacement de la caméra avec le panda
       addition_vectorielle(&camera.position, 1, camera.position, -K*delta, panda.direction_normal);
     }
 

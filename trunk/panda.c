@@ -190,3 +190,10 @@ void panda_actualiser_position()
   // On met à jour l'affichage
   glutPostRedisplay();
 }
+
+void actualiser_AABB()
+{
+  panda.box.largeur = panda.largeur * cos(PI/2.0 - panda.angle) + longeur * cos(panda.angle);
+  panda.box.longeur = panda.largeur * cos(PI/2.0 - panda.angle) + longeur * cos(panda.angle);
+  panda.box.position = panda.position;
+}

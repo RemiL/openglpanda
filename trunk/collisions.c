@@ -1,6 +1,6 @@
 #include "collisions.h"
 
-int collisionTerrain(t_panda panda, char pHeightMap[])
+/*int collisionTerrain(t_panda panda, char pHeightMap[])
 {
   int dx, dy;
   if(panda.direction.x >= 0)
@@ -28,4 +28,21 @@ int collisionTerrain(t_panda panda, char pHeightMap[])
   {
     return 0;
   }
+}*/
+
+int collisionTerrain(AABB box, char pHeightMap[])
+{
+  float x = box.posisiton.x + box.largeur/2;
+  float y = box.position.y + box.lobgeur/2;
+  float z = box.position.z;
+  int ix = (int)(x);
+  int iy = (int)(y);
+  float dx = x - ix;
+  float dy = y - iy;
+  float hauteursol = ((1-dx)*Height(pHeightMap, ix, iy) + dx*Height(pHeightMap, ix+1, iy)) * (1-dy)
+                   +((1-dx)*Height(pHeightMap, ix, iy+1) + dx*Height(pHeightMap, ix+1, iy+1)) * dy;
+  if (hauteursol > z)
+    return true;
+  else
+    return false;
 }

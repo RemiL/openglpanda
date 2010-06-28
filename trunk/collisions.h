@@ -5,6 +5,6 @@
 #include "heightmap.h"
 #include "panda.h"
 
-int collisionTerrain(t_panda panda, char pHeightMap[]);
+int collisionTerrain(AABB box, char pHeightMap[]);
 
 #endif /* __collision_h__ */

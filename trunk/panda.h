@@ -6,12 +6,20 @@
 typedef struct
 {
   t_coordonnees position;
+  float largeur;
+  float longeur;
+} AABB;
+
+typedef struct
+{
+  t_coordonnees position;
   t_coordonnees direction;
   t_coordonnees direction_normal;
   t_coordonnees direction_initial;
   t_coordonnees direction_normal_initial;
   t_coordonnees vecteur_def_vertical;
   double angle;
+  AABB box;
 } t_panda;
 
 GLuint faire_tete_panda();
