@@ -1,3 +1,10 @@
+/*****************************************************************************
+MON PANDA - Projet Informatique Graphique 2010
+
+par
+
+Rémi LACROIX et Nicolas POIRIER
+******************************************************************************/
 #include "collisions.h"
 
 /*int collisionTerrain(t_panda panda, char pHeightMap[])
