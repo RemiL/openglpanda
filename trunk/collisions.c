@@ -123,49 +123,23 @@ int deplacement_camera_valide(t_coordonnees p)
   return (sqrt(p.x*p.x + p.y*p.y + p.z*p.z) < 990);
 }
 
-/*int collisionTerrain(t_panda panda, char pHeightMap[])
+int collisionTerrain(t_rectangle r, char pHeightMap[])
 {
-  int dx, dy;
-  if(panda.direction.x >= 0)
+  int i;
+  for(i=0; i<4; i++)
   {
-    dx = STEP_SIZE;
-  }
-  else
-  {
-    dx = -STEP_SIZE;
-  }
-  if(panda.direction.y >= 0)
-  {
-    dy = STEP_SIZE;
-  }
-  else
-  {
-    dy = STEP_SIZE;
-  }
-  printf("%f, %f - %f, %f : %d\n", panda.position.x, panda.position.y, panda.direction.x, panda.direction.y, Height(pHeightMap, panda.position.x, panda.position.y) - Height(pHeightMap, panda.position.x+dx, panda.position.y+dy));
-  if(Height(pHeightMap, panda.position.x, panda.position.y) - Height(pHeightMap, panda.position.x+dx, panda.position.y+dy) > 1 || Height(pHeightMap, panda.position.x, panda.position.y) - Height(pHeightMap, panda.position.x+dx, panda.position.y+dy) < -1)
-  {
-    return 1;
-  }
-  else
-  {
-    return 0;
-  }
-}*/
+    float x = r.point[i].x;
+    float y = r.point[i].y;
+    float z = 0;
+    int ix = (int)(x);
+    int iy = (int)(y);
+    float dx = x - ix;
+    float dy = y - iy;
+    float hauteursol = ((1-dx)*Height(pHeightMap, ix, iy) + dx*Height(pHeightMap, ix+1, iy)) * (1-dy)
+                     +((1-dx)*Height(pHeightMap, ix, iy+1) + dx*Height(pHeightMap, ix+1, iy+1)) * dy;
 
-int collisionTerrain(AABB box, char pHeightMap[])
-{
-  /*float x = box.position.x + box.largeur/2;
-  float y = box.position.y + box.longueur/2;
-  float z = box.position.z;
-  int ix = (int)(x);
-  int iy = (int)(y);
-  float dx = x - ix;
-  float dy = y - iy;
-  float hauteursol = ((1-dx)*Height(pHeightMap, ix, iy) + dx*Height(pHeightMap, ix+1, iy)) * (1-dy)
-                   +((1-dx)*Height(pHeightMap, ix, iy+1) + dx*Height(pHeightMap, ix+1, iy+1)) * dy;
-  if (hauteursol > z)
-    return true;
-  else*/
-    return false;
+    if (hauteursol != z)
+          return true;
+  }
+  return false;
 }
