@@ -1,3 +1,10 @@
+/*****************************************************************************
+MON PANDA - Projet Informatique Graphique 2010
+
+par
+
+Rémi LACROIX et Nicolas POIRIER
+******************************************************************************/
 #include "panda.h"
 
 extern t_panda panda;

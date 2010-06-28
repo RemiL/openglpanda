@@ -1,3 +1,10 @@
+/*****************************************************************************
+MON PANDA - Projet Informatique Graphique 2010
+
+par
+
+Rémi LACROIX et Nicolas POIRIER
+******************************************************************************/
 #ifndef __camera_h__
 #define __camera_h__
 

@@ -1,3 +1,10 @@
+/*****************************************************************************
+MON PANDA - Projet Informatique Graphique 2010
+
+par
+
+Rémi LACROIX et Nicolas POIRIER
+******************************************************************************/
 #include "bambou.h"
 
 GLuint Mon_Morceau_Bambou;

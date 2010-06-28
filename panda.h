@@ -1,3 +1,10 @@
+/*****************************************************************************
+MON PANDA - Projet Informatique Graphique 2010
+
+par
+
+Rémi LACROIX et Nicolas POIRIER
+******************************************************************************/
 #ifndef __panda_h__
 #define __panda_h__
 

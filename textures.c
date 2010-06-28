@@ -1,3 +1,10 @@
+/*****************************************************************************
+MON PANDA - Projet Informatique Graphique 2010
+
+par
+
+Rémi LACROIX et Nicolas POIRIER
+******************************************************************************/
 #include "textures.h"
 
 // load a width x height RGB .RAW file as a texture

@@ -1,11 +1,20 @@
+/*****************************************************************************
+MON PANDA - Projet Informatique Graphique 2010
+
+par
+
+Rémi LACROIX et Nicolas POIRIER
+******************************************************************************/
 #ifndef __heightmap_h__
 #define __heightmap_h__
 
-#include <stdio.h>
+#include "common.h"
 #include "textures.h"
 
-#define		MAP_SIZE	1024				// Size Of Our .RAW Height Map ( NEW )
-#define		STEP_SIZE	16				// Width And Height Of Each Quad ( NEW )
+// Taille de la carte au format RAW
+#define MAP_SIZE 1024
+// Taille d'une "unité" de la carte
+#define STEP_SIZE 16
 
 void LoadRawFile(char* strName, int nSize, char *pHeightMap);
 void RenderHeightMap(char pHeightMap[]);

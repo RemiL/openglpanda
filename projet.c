@@ -1,5 +1,5 @@
 /*****************************************************************************
-MON PANDA
+MON PANDA - Projet Informatique Graphique 2010
 
 par
 
@@ -40,7 +40,7 @@ GLuint texture_ciel;
 GLuint texture_roche;
 
 // Carte pour le heightmapping
-char g_HeightMap[MAP_SIZE*MAP_SIZE];				// Holds The Height Map Data ( NEW )
+char g_HeightMap[MAP_SIZE*MAP_SIZE];    // Holds The Height Map Data ( NEW )
 
 // Variables pour la marche
 enum etats{ArriereAvance = 0, AvantAvance, Recule};
@@ -118,7 +118,7 @@ int latence = 4;
 
 GLvoid initGL();
 GLvoid window_display(void);
-GLvoid window_reshape(GLsizei width, GLsizei height); 
+GLvoid window_reshape(GLsizei width, GLsizei height);
 GLvoid window_key(unsigned char key, int x, int y);
 GLvoid window_up_key(unsigned char key, int x, int y);
 GLvoid window_special_key(int key, int x, int y);
@@ -133,7 +133,7 @@ void dessiner_decor();
 void dessiner_panda();
 void render_scene();
 
-int main(int argc, char **argv) 
+int main(int argc, char **argv)
 {
   srand(time(NULL));
   // initialisation  des paramètres de GLUT
@@ -169,7 +169,7 @@ int main(int argc, char **argv)
   glutTimerFunc(latence,&window_timer,Step);
 
   // la boucle prinicipale de gestion des événements utilisateur
-  glutMainLoop();  
+  glutMainLoop();
 
   return 1;
 }
@@ -305,7 +305,7 @@ GLvoid window_reshape(GLsizei width, GLsizei height)
   glLoadIdentity();
   gluPerspective(70, (float) width / height, 1, 2000);
 
-  // toutes les transformations suivantes s´appliquent au modèle de vue 
+  // toutes les transformations suivantes s´appliquent au modèle de vue
   glMatrixMode(GL_MODELVIEW);
 }
 
