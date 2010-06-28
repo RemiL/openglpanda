@@ -525,8 +525,6 @@ GLvoid window_timer(int value)
         panda.position.x -= K*delta*allure*cos(panda.angle);
         panda.position.y += K*delta*allure*sin(panda.angle);
       }
-      // Déplacement de la caméra avec le panda
-        addition_vectorielle(&camera.position, 1, camera.position, K*delta*allure, panda.direction);
     }
     else if(isDownKeyDown)
     {
@@ -539,11 +537,9 @@ GLvoid window_timer(int value)
       // Verification collision
       if(collision_bambous(&panda.englobant, englobants_bambous, NB_BAMBOUS) || collisionTerrain(panda.box, g_HeightMap))
       {
-        panda.position.x += K*delta*allure*cos(panda.angle);
-        panda.position.y -= K*delta*allure*sin(panda.angle);
+        panda.position.x += K*delta*cos(panda.angle);
+        panda.position.y -= K*delta*sin(panda.angle);
       }
-      // Déplacement de la caméra avec le panda
-      addition_vectorielle(&camera.position, 1, camera.position, -K*delta, panda.direction);
     }
 
     if(isDownKeyRight)
@@ -557,11 +553,9 @@ GLvoid window_timer(int value)
       // Verification collision
       if(collision_bambous(&panda.englobant, englobants_bambous, NB_BAMBOUS) || collisionTerrain(panda.box, g_HeightMap))
       {
-        panda.position.x += K*delta*allure*cos(panda.angle);
-        panda.position.y += K*delta*allure*sin(panda.angle);
+        panda.position.x += K*delta*sin(panda.angle);
+        panda.position.y += K*delta*cos(panda.angle);
       }
-      // Déplacement de la caméra avec le panda
-      addition_vectorielle(&camera.position, 1, camera.position, K*delta, panda.direction_normal);
     }
     else if(isDownKeyLeft)
     {
@@ -575,11 +569,9 @@ GLvoid window_timer(int value)
       // Verification collision
       if(collision_bambous(&panda.englobant, englobants_bambous, NB_BAMBOUS) || collisionTerrain(panda.box, g_HeightMap))
       {
-        panda.position.x -= K*delta*allure*cos(panda.angle);
-        panda.position.y -= K*delta*allure*sin(panda.angle);
+        panda.position.x -= K*delta*sin(panda.angle);
+        panda.position.y -= K*delta*cos(panda.angle);
       }
-      // Déplacement de la caméra avec le panda
-      addition_vectorielle(&camera.position, 1, camera.position, -K*delta, panda.direction_normal);
     }
 
     if(allure < Pas)
