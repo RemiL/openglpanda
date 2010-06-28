@@ -183,6 +183,15 @@ void init_panda()
   panda.vecteur_def_vertical.x = 0;
   panda.vecteur_def_vertical.y = 0;
   panda.vecteur_def_vertical.z = 1;
+  
+  panda.englobant.point[0].x = panda.position.x + 2.5;
+  panda.englobant.point[0].y = panda.position.y + 2;
+  panda.englobant.point[1].x = panda.position.x + 2.5;
+  panda.englobant.point[1].y = panda.position.y - 2;
+  panda.englobant.point[2].x = panda.position.x - 6;
+  panda.englobant.point[2].y = panda.position.y - 2;
+  panda.englobant.point[3].x = panda.position.x - 6;
+  panda.englobant.point[3].y = panda.position.y + 2;
 }
 
 void panda_actualiser_position()
@@ -194,13 +203,16 @@ void panda_actualiser_position()
   // On recalcule le nouveau vecteur normal
   produit_vectoriel(&panda.direction_normal, panda.direction, panda.vecteur_def_vertical);
   
+  // Déplacement englobant
+  actualisation_englobant(&panda.englobant, panda.position.x, panda.position.y, panda.angle);
+
   // On met à jour l'affichage
   glutPostRedisplay();
 }
 
 void actualiser_AABB()
 {
-  panda.box.largeur = panda.largeur * cos(PI/2.0 - panda.angle) + longeur * cos(panda.angle);
+  /*panda.box.largeur = panda.largeur * cos(PI/2.0 - panda.angle) + longeur * cos(panda.angle);
   panda.box.longeur = panda.largeur * cos(PI/2.0 - panda.angle) + longeur * cos(panda.angle);
-  panda.box.position = panda.position;
+  panda.box.position = panda.position;*/
 }

@@ -18,6 +18,8 @@ Rémi LACROIX et Nicolas POIRIER
 
 #define KEY_ESC 27
 
+#define NB_BAMBOUS 40
+
 // Permet de savoir les touches directionnelles appuyées
 int isDownKeyUp = 0;
 int isDownKeyDown = 0;
@@ -56,7 +58,7 @@ t_panda panda;
 float t = 0.f;
 float delta = 50.f;
 float k = 0.001f;
-float K = 0.05f;
+float K = 0.001f;
 float angleRotationPanda;
 
 float angle_Bras[2];
@@ -112,6 +114,9 @@ t_camera camera;
 int position_clique_x, position_clique_y;
 int camera_deplacement_active = false;
 
+// Gestion collision
+t_cercle *englobants_bambous;
+
 // Gestion timer
 int Step = 0;
 int latence = 4;
@@ -143,7 +148,7 @@ int main(int argc, char **argv)
   glutInitWindowSize(windowWidth, windowHeight);
   glutInitWindowPosition(0, 0);
   glutCreateWindow("Panda - Projet OpenGL 2010");
-
+  
   // initialisation de OpenGL et de la scène
   initGL();  
   init_scene();
@@ -452,6 +457,13 @@ GLvoid window_mouvements_souris(int x, int y)
       panda.angle += (double)(x-position_clique_x) * PI / 2 / window_width;
 
       panda_actualiser_position();
+
+      // Verification collision
+      if(collision_bambous(&panda.englobant, englobants_bambous, NB_BAMBOUS) || collisionTerrain(panda.box, g_HeightMap))
+      {
+        panda.angle -= (double)(x-position_clique_x) * PI / 2 / window_width;
+        panda_actualiser_position();
+      }
     }
     else
     {
@@ -473,6 +485,13 @@ GLvoid window_mouvements_passifs_souris(int x, int y)
     panda.angle += (double)(x - (window_width/2)) * PI / 2 / window_width;
     
     panda_actualiser_position();
+
+    // Verification collision
+    if(collision_bambous(&panda.englobant, englobants_bambous, NB_BAMBOUS) || collisionTerrain(panda.box, g_HeightMap))
+    {
+      panda.angle -= (double)(x - (window_width/2)) * PI / 2 / window_width;
+      panda_actualiser_position();
+    }
   }
   else
   {
@@ -494,20 +513,35 @@ GLvoid window_timer(int value)
     if(isDownKeyUp)
     {
       t += delta*allure;
+
       // On déplace la position de l'avatar pour qu'il avance
-      if(!collisionTerrain(panda.box, g_HeightMap))
+      panda.position.x += K*delta*allure*cos(panda.angle);
+      panda.position.y -= K*delta*allure*sin(panda.angle);
+      // Déplacement englobant
+      actualisation_englobant(&panda.englobant, panda.position.x, panda.position.y, panda.angle);
+      // Verification collision
+      if(collision_bambous(&panda.englobant, englobants_bambous, NB_BAMBOUS) || collisionTerrain(panda.box, g_HeightMap))
       {
-        panda.position.x += K*delta*allure*cos(panda.angle);
-        panda.position.y -= K*delta*allure*sin(panda.angle);
-        // Déplacement de la caméra avec le panda
-        addition_vectorielle(&camera.position, 1, camera.position, K*delta*allure, panda.direction);
+        panda.position.x -= K*delta*allure*cos(panda.angle);
+        panda.position.y += K*delta*allure*sin(panda.angle);
       }
+      // Déplacement de la caméra avec le panda
+        addition_vectorielle(&camera.position, 1, camera.position, K*delta*allure, panda.direction);
     }
     else if(isDownKeyDown)
     {
       t += delta;
+
       panda.position.x -= K*delta*cos(panda.angle);
       panda.position.y += K*delta*sin(panda.angle);
+      // Déplacement englobant
+      actualisation_englobant(&panda.englobant, panda.position.x, panda.position.y, panda.angle);
+      // Verification collision
+      if(collision_bambous(&panda.englobant, englobants_bambous, NB_BAMBOUS) || collisionTerrain(panda.box, g_HeightMap))
+      {
+        panda.position.x += K*delta*allure*cos(panda.angle);
+        panda.position.y -= K*delta*allure*sin(panda.angle);
+      }
       // Déplacement de la caméra avec le panda
       addition_vectorielle(&camera.position, 1, camera.position, -K*delta, panda.direction);
     }
@@ -518,6 +552,14 @@ GLvoid window_timer(int value)
         t += delta;
       panda.position.x -= K*delta*sin(panda.angle);
       panda.position.y -= K*delta*cos(panda.angle);
+      // Déplacement englobant
+      actualisation_englobant(&panda.englobant, panda.position.x, panda.position.y, panda.angle);
+      // Verification collision
+      if(collision_bambous(&panda.englobant, englobants_bambous, NB_BAMBOUS) || collisionTerrain(panda.box, g_HeightMap))
+      {
+        panda.position.x += K*delta*allure*cos(panda.angle);
+        panda.position.y += K*delta*allure*sin(panda.angle);
+      }
       // Déplacement de la caméra avec le panda
       addition_vectorielle(&camera.position, 1, camera.position, K*delta, panda.direction_normal);
     }
@@ -525,8 +567,17 @@ GLvoid window_timer(int value)
     {
       if(!isDownKeyUp && !isDownKeyDown)
         t += delta;
+
       panda.position.x += K*delta*sin(panda.angle);
       panda.position.y += K*delta*cos(panda.angle);
+      // Déplacement englobant
+      actualisation_englobant(&panda.englobant, panda.position.x, panda.position.y, panda.angle);
+      // Verification collision
+      if(collision_bambous(&panda.englobant, englobants_bambous, NB_BAMBOUS) || collisionTerrain(panda.box, g_HeightMap))
+      {
+        panda.position.x -= K*delta*allure*cos(panda.angle);
+        panda.position.y -= K*delta*allure*sin(panda.angle);
+      }
       // Déplacement de la caméra avec le panda
       addition_vectorielle(&camera.position, 1, camera.position, -K*delta, panda.direction_normal);
     }
@@ -541,25 +592,42 @@ GLvoid window_timer(int value)
     if(isDownKeyUp)
     {
       addition_vectorielle(&camera.position, 1, camera.position, camera.pas, camera.vecteur_observation);
+      if (!deplacement_camera_valide(camera.position))
+        addition_vectorielle(&camera.position, 1, camera.position, -camera.pas, camera.vecteur_observation);
     }
     else if(isDownKeyDown)
     {
       addition_vectorielle(&camera.position, 1, camera.position, -camera.pas, camera.vecteur_observation);
+      if (!deplacement_camera_valide(camera.position))
+        addition_vectorielle(&camera.position, 1, camera.position, camera.pas, camera.vecteur_observation);
     }
 
     if(isDownKeyRight)
     {
       addition_vectorielle(&camera.position, 1, camera.position, camera.pas, camera.vecteur_normal);
+      if (!deplacement_camera_valide(camera.position))
+        addition_vectorielle(&camera.position, 1, camera.position, -camera.pas, camera.vecteur_normal);
     }
     else if(isDownKeyLeft)
     {
       addition_vectorielle(&camera.position, 1, camera.position, -camera.pas, camera.vecteur_normal);
+      if (!deplacement_camera_valide(camera.position))
+        addition_vectorielle(&camera.position, 1, camera.position, camera.pas, camera.vecteur_normal);
     }
 
     if(mode == Spectateur && allure > Arret)
     {
       panda.position.x += K*delta*allure*cos(panda.angle);
       panda.position.y -= K*delta*allure*sin(panda.angle);
+      // Déplacement englobant
+      actualisation_englobant(&panda.englobant, panda.position.x, panda.position.y, panda.angle);
+      // Verification collision
+      if(collision_bambous(&panda.englobant, englobants_bambous, NB_BAMBOUS) || collisionTerrain(panda.box, g_HeightMap))
+      {
+        panda.position.x -= K*delta*allure*cos(panda.angle);
+        panda.position.y += K*delta*allure*sin(panda.angle);
+        allure = Arret;
+      }
       t += delta*allure;
     }
   }
@@ -769,7 +837,6 @@ GLvoid window_timer(int value)
     t += 0.1;
   }
   
-  
   glutTimerFunc(latence,&window_timer,++Step);
 
   glutPostRedisplay();
@@ -794,7 +861,7 @@ void faire_composantes()
   Mon_Mollet = faire_mollet_panda();
   
   // Décor
-  Ma_Foret = faire_foret_bambous(60, 20, g_HeightMap);
+  Ma_Foret = faire_foret_bambous(NB_BAMBOUS, 20, g_HeightMap, &englobants_bambous);
 
   Mon_Sol = glGenLists(2);
   Mon_Ciel = Mon_Sol + 1;
@@ -921,6 +988,8 @@ void dessiner_panda()
 
 void render_scene()
 {
+  GLUquadricObj* qobj;
+
   dessiner_panda();
   dessiner_decor();
 

@@ -9,13 +9,8 @@ Rémi LACROIX et Nicolas POIRIER
 #define __panda_h__
 
 #include "common.h"
-
-typedef struct
-{
-  t_coordonnees position;
-  float largeur;
-  float longeur;
-} AABB;
+#include "collisions.h"
+#include "camera.h"
 
 typedef struct
 {
@@ -27,6 +22,7 @@ typedef struct
   t_coordonnees vecteur_def_vertical;
   double angle;
   AABB box;
+  t_rectangle englobant;
 } t_panda;
 
 GLuint faire_tete_panda();

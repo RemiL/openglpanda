@@ -175,7 +175,7 @@ void faire_bambou(GLuint liste, int hauteur, int nb_branches)
   glEndList();
 }
 
-int faire_foret_bambous(int nb_bambous, int nb_varietes, char* pHeightMap)
+int faire_foret_bambous(int nb_bambous, int nb_varietes, char* pHeightMap, t_cercle **englobants_bambous)
 {
   int i, x, y;
   GLuint foret;
@@ -183,13 +183,14 @@ int faire_foret_bambous(int nb_bambous, int nb_varietes, char* pHeightMap)
   faire_composantes_bambou();
   
   Mes_Bambous = (GLuint*) malloc(sizeof(GLuint)*nb_varietes);
+  *englobants_bambous = (t_cercle*) malloc(sizeof(t_cercle)*nb_bambous);
   
   Mes_Bambous[0] = glGenLists(nb_varietes+1);
   for (i=1; i<nb_varietes; i++)
     Mes_Bambous[i] = Mes_Bambous[i-1] + 1;
   foret = Mes_Bambous[nb_varietes-1] + 1;
   
-  for (i=0; i<nb_bambous/3; i++)
+  for (i=0; i<nb_varietes; i++)
     faire_bambou(Mes_Bambous[i], nb_aleatoire(7,12), nb_aleatoire(7,12)*1.7);
 
   glNewList(foret, GL_COMPILE);
@@ -198,6 +199,9 @@ int faire_foret_bambous(int nb_bambous, int nb_varietes, char* pHeightMap)
       glPushMatrix();
         x = (i/10)*17+nb_aleatoire(-2,10);
         y = (i%10)*17+nb_aleatoire(-2,10);
+        (*englobants_bambous)[i].centre.x = x;
+        (*englobants_bambous)[i].centre.y = y;
+        (*englobants_bambous)[i].rayon = 1.5;
         glTranslatef(x, y, Height(pHeightMap, x, y)+5);
         glCallList(Mes_Bambous[nb_aleatoire(0,nb_varietes-1)]);
       glPopMatrix();
