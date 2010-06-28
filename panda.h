@@ -21,7 +21,6 @@ typedef struct
   t_coordonnees direction_normal_initial;
   t_coordonnees vecteur_def_vertical;
   double angle;
-  AABB box;
   t_rectangle englobant;
 } t_panda;
 

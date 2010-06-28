@@ -200,9 +200,6 @@ GLvoid initGL()
   glEnable(GL_LIGHT1);
 
   // propriétés matérielles des objets
-  //glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, mat_ambientanddiffuse);
-  //glMaterialfv(GL_FRONT, GL_SPECULAR, mat_specular);
-  //glMaterialfv(GL_FRONT, GL_SHININESS, mat_shininess);
   glShadeModel( GL_SMOOTH );
   glEnable(GL_COLOR_MATERIAL);
 
@@ -373,10 +370,6 @@ GLvoid window_up_key(unsigned char key, int x, int y)
     case 'f':
       camera_activer_mode_fps(!camera.mode_fps);
       break;
-    // Action devant un bambou
-    case 13:
-      printf("ENTER\n");
-      break;
     default:
       //printf ("La touche %d n´est pas active.\n", key);
       break;
@@ -459,7 +452,7 @@ GLvoid window_mouvements_souris(int x, int y)
       panda_actualiser_position();
 
       // Verification collision
-      if(collision_bambous(&panda.englobant, englobants_bambous, NB_BAMBOUS) || collisionTerrain(panda.box, g_HeightMap))
+      if(collision_bambous(&panda.englobant, englobants_bambous, NB_BAMBOUS) || collisionTerrain(panda.englobant, g_HeightMap))
       {
         panda.angle -= (double)(x-position_clique_x) * PI / 2 / window_width;
         panda_actualiser_position();
@@ -487,7 +480,7 @@ GLvoid window_mouvements_passifs_souris(int x, int y)
     panda_actualiser_position();
 
     // Verification collision
-    if(collision_bambous(&panda.englobant, englobants_bambous, NB_BAMBOUS) || collisionTerrain(panda.box, g_HeightMap))
+    if(collision_bambous(&panda.englobant, englobants_bambous, NB_BAMBOUS) || collisionTerrain(panda.englobant, g_HeightMap))
     {
       panda.angle -= (double)(x - (window_width/2)) * PI / 2 / window_width;
       panda_actualiser_position();
@@ -520,7 +513,7 @@ GLvoid window_timer(int value)
       // Déplacement englobant
       actualisation_englobant(&panda.englobant, panda.position.x, panda.position.y, panda.angle);
       // Verification collision
-      if(collision_bambous(&panda.englobant, englobants_bambous, NB_BAMBOUS) || collisionTerrain(panda.box, g_HeightMap))
+      if(collision_bambous(&panda.englobant, englobants_bambous, NB_BAMBOUS) || collisionTerrain(panda.englobant, g_HeightMap))
       {
         panda.position.x -= K*delta*allure*cos(panda.angle);
         panda.position.y += K*delta*allure*sin(panda.angle);
@@ -535,7 +528,7 @@ GLvoid window_timer(int value)
       // Déplacement englobant
       actualisation_englobant(&panda.englobant, panda.position.x, panda.position.y, panda.angle);
       // Verification collision
-      if(collision_bambous(&panda.englobant, englobants_bambous, NB_BAMBOUS) || collisionTerrain(panda.box, g_HeightMap))
+      if(collision_bambous(&panda.englobant, englobants_bambous, NB_BAMBOUS) || collisionTerrain(panda.englobant, g_HeightMap))
       {
         panda.position.x += K*delta*cos(panda.angle);
         panda.position.y -= K*delta*sin(panda.angle);
@@ -551,7 +544,7 @@ GLvoid window_timer(int value)
       // Déplacement englobant
       actualisation_englobant(&panda.englobant, panda.position.x, panda.position.y, panda.angle);
       // Verification collision
-      if(collision_bambous(&panda.englobant, englobants_bambous, NB_BAMBOUS) || collisionTerrain(panda.box, g_HeightMap))
+      if(collision_bambous(&panda.englobant, englobants_bambous, NB_BAMBOUS) || collisionTerrain(panda.englobant, g_HeightMap))
       {
         panda.position.x += K*delta*sin(panda.angle);
         panda.position.y += K*delta*cos(panda.angle);
@@ -567,7 +560,7 @@ GLvoid window_timer(int value)
       // Déplacement englobant
       actualisation_englobant(&panda.englobant, panda.position.x, panda.position.y, panda.angle);
       // Verification collision
-      if(collision_bambous(&panda.englobant, englobants_bambous, NB_BAMBOUS) || collisionTerrain(panda.box, g_HeightMap))
+      if(collision_bambous(&panda.englobant, englobants_bambous, NB_BAMBOUS) || collisionTerrain(panda.englobant, g_HeightMap))
       {
         panda.position.x -= K*delta*sin(panda.angle);
         panda.position.y -= K*delta*cos(panda.angle);
@@ -614,7 +607,7 @@ GLvoid window_timer(int value)
       // Déplacement englobant
       actualisation_englobant(&panda.englobant, panda.position.x, panda.position.y, panda.angle);
       // Verification collision
-      if(collision_bambous(&panda.englobant, englobants_bambous, NB_BAMBOUS) || collisionTerrain(panda.box, g_HeightMap))
+      if(collision_bambous(&panda.englobant, englobants_bambous, NB_BAMBOUS) || collisionTerrain(panda.englobant, g_HeightMap))
       {
         panda.position.x -= K*delta*allure*cos(panda.angle);
         panda.position.y += K*delta*allure*sin(panda.angle);
